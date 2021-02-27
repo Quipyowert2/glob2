@@ -2057,7 +2057,6 @@ namespace GAGCore
 			}
 #endif
 			setClipRect(0, 0, w, h);
-			nextFrame();
 		}
 		else {
 			// create the new window and the surface
