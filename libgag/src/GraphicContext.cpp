@@ -1919,6 +1919,7 @@ namespace GAGCore
 	{
 		minW = w;
 		minH = h;
+		SDL_SetWindowMinimumSize(window, minW, minH);
 	}
 
 	VideoModes GraphicContext::listVideoModes() const
