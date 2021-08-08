@@ -2192,6 +2192,7 @@ namespace GAGCore
 			else
 			#endif
 			{
+				sdlsurface = SDL_GetWindowSurface(window);
 				SDL_UpdateWindowSurface(window);
 			}
 		}
