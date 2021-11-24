@@ -24,6 +24,10 @@
 #include "RessourcesTypes.h"
 #include "Settings.h"
 
+#ifndef YOG_SERVER_ONLY
+#include "RenderThread.h"
+#endif
+
 namespace GAGCore
 {
 	class FileManager;
@@ -73,6 +77,7 @@ public:
 
 #ifndef YOG_SERVER_ONLY
 	GraphicContext *gfx;
+	RenderThread *rthr;
 	SoundMixer *mix;
 	VoiceRecorder *voiceRecorder;
 	
