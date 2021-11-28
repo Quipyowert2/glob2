@@ -7,8 +7,17 @@
 using namespace GAGCore;
 class RenderThreadImpl
 {
+	friend class RenderThread;
 public:
-RenderThreadImpl() :gfx(nullptr) {}
+RenderThreadImpl() :gfx(nullptr), id(boost::this_thread::get_id()), keepRunning(true)
+{
+	thread = boost::thread(boost::ref(*this));
+}
+~RenderThreadImpl()
+{
+	keepRunning = false;
+	thread.join();
+}
 int operator()()
 {
 	std::cout << "RenderThreadImpl::operator() " << std::endl;
@@ -20,6 +29,18 @@ int operator()()
 		//gfx->setQuality((settings.optionFlags & OPTION_LOW_SPEED_GFX) != 0 ? GraphicContext::LOW_QUALITY : GraphicContext::HIGH_QUALITY);
 	}
 	gfxInitialized.notify_all();
+
+	//main loop
+	while (keepRunning)
+	{
+		boost::unique_lock<boost::mutex> lock(queueMutex);
+		while (queue.empty())
+		{
+			queueCond.wait(lock);
+		}
+		queue.front()();
+		queue.pop_front();
+	}
 }
 GAGCore::GraphicContext* getGfx()
 {
@@ -33,16 +54,36 @@ private:
 	GAGCore::GraphicContext* gfx;
 	boost::mutex gfxMutex;
 	boost::condition_variable gfxInitialized;
+
+	std::deque<std::function<void()> > queue;
+	boost::mutex queueMutex;
+	boost::condition_variable queueCond;
+
+	boost::thread::id id;
+	boost::thread thread;
+	std::atomic<bool> keepRunning;
 };
 RenderThread::RenderThread()
 	:impl(new RenderThreadImpl)
 {
 	std::cout << "RenderThread constructor" << std::endl;
-	boost::thread thread(boost::ref(*impl));
 }
 GAGCore::GraphicContext* RenderThread::getGfx()
 {
 	return impl->getGfx();
+}
+// Pass a parameter-less lambda
+void RenderThread::pushOrder(std::function<void()> f)
+{
+	{
+		boost::lock_guard<boost::mutex> lock(impl->queueMutex);
+		impl->queue.push_back(f);
+	}
+	impl->queueCond.notify_all();
+}
+boost::thread::id RenderThread::getId()
+{
+	return impl->id;
 }
 RenderThread::~RenderThread()
 {
