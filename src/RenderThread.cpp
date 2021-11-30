@@ -9,9 +9,10 @@ class RenderThreadImpl
 {
 	friend class RenderThread;
 public:
-RenderThreadImpl() :gfx(nullptr), id(boost::this_thread::get_id()), keepRunning(true)
+RenderThreadImpl() :gfx(nullptr), keepRunning(true)
 {
 	thread = boost::thread(boost::ref(*this));
+	id = thread.get_id();
 }
 ~RenderThreadImpl()
 {
