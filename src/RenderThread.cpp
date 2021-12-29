@@ -5,11 +5,17 @@
 #include <iostream>
 #include <boost/thread.hpp>
 using namespace GAGCore;
+enum RenderState {
+	TITLESCREEN,
+	IN_MENU,
+	IN_GAME,
+	MAPEDIT
+};
 class RenderThreadImpl
 {
 	friend class RenderThread;
 public:
-RenderThreadImpl() :gfx(nullptr), keepRunning(true)
+RenderThreadImpl() :gfx(nullptr), keepRunning(true), state(TITLESCREEN), gui(nullptr), screen(nullptr)
 {
 	thread = boost::thread(boost::ref(*this));
 	id = thread.get_id();
@@ -37,11 +43,36 @@ int operator()()
 		boost::unique_lock<boost::mutex> lock(queueMutex);
 		while (queue.empty())
 		{
-			queueCond.wait(lock);
+			switch (state.load())
+			{
+			case TITLESCREEN:
+			case IN_MENU:
+				if (!screen)
+					break;
+				screen.load()->dispatchPaint();
+				break;
+			case IN_GAME:
+				if (!gui)
+					break;
+				{
+				GameGUI* g = gui.load();
+				// Engine.cpp:511
+				g->drawAll(g->localTeamNo);
+				}
+				break;
+			case MAPEDIT:
+				assert(!"Unimplemented");
+				break;
+			default:
+				assert(!"Unknown render state");
+				break;
+			}
+			//queueCond.wait(lock);
 		}
 		queue.front()();
 		queue.pop_front();
 	}
+	return true;
 }
 GAGCore::GraphicContext* getGfx()
 {
@@ -60,6 +91,10 @@ private:
 	boost::mutex queueMutex;
 	boost::condition_variable queueCond;
 
+	std::atomic<RenderState> state;
+	std::atomic<GameGUI*> gui;
+	std::atomic<Screen*> screen;
+
 	boost::thread::id id;
 	boost::thread thread;
 	std::atomic<bool> keepRunning;
@@ -72,6 +107,16 @@ RenderThread::RenderThread()
 GAGCore::GraphicContext* RenderThread::getGfx()
 {
 	return impl->getGfx();
+}
+void RenderThread::setScreen(Screen* s)
+{
+	impl->state = IN_MENU;
+	impl->screen = s;
+}
+void RenderThread::setGui(GameGUI* g)
+{
+	impl->state = IN_GAME;
+	impl->gui = g;
 }
 // Pass a parameter-less lambda
 void RenderThread::pushOrder(std::function<void()> f)

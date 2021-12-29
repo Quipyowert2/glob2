@@ -1,6 +1,7 @@
 #ifndef RENDERTHREAD_H
 #define RENDERTHREAD_H
 #include <boost/thread.hpp>
+#include "GameGUI.h"
 class RenderThreadImpl;
 namespace GAGCore
 {
@@ -12,6 +13,9 @@ public:
 	RenderThread();
 	~RenderThread();
 	GAGCore::GraphicContext* getGfx();
+	void setScreen(Screen* s);
+	void setGui(GameGUI* g);
+	//void setMapEdit();
 	void pushOrder(std::function<void()> f);
 	boost::thread::id getId();
 private:
