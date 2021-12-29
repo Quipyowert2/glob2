@@ -40,7 +40,6 @@ int operator()()
 	//main loop
 	while (keepRunning)
 	{
-		boost::unique_lock<boost::mutex> lock(queueMutex);
 		while (queue.empty())
 		{
 			switch (state.load())
@@ -69,6 +68,7 @@ int operator()()
 			}
 			//queueCond.wait(lock);
 		}
+		boost::unique_lock<boost::mutex> lock(queueMutex);
 		queue.front()();
 		queue.pop_front();
 	}
