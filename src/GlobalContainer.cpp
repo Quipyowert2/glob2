@@ -508,14 +508,8 @@ void GlobalContainer::loadClient(void)
 {
 	if (!runNoX)
 	{
-		rthr = new RenderThread();
-		
-		gfx = rthr->getGfx();
 		assert(gfx);
-		/*while (!GAGCore::_gc) {
-			std::cout << "Waiting for GraphicContext initialization" << std::endl;
-		}*/
-		// sleep(5);
+
 		// load data required for drawing progress screen
 		title = new DrawableSurface("data/gfx/title.png");
 		terrain = Toolkit::getSprite("data/gfx/terrain");
@@ -646,7 +640,25 @@ void GlobalContainer::load(void)
 	ressourcesTypes.load("data/ressources.txt"); ///TODO: coding in english or french? english is resources, french is ressources
 
 #ifndef YOG_SERVER_ONLY
-	loadClient();
+	rthr = new RenderThread();
+	gfx = rthr->getGfx();
+	std::atomic<bool> clientInitialized;
+	boost::mutex clientMutex;
+	boost::condition_variable clientCond;
+	clientInitialized = false;
+	rthr->pushOrder([this, &clientMutex, &clientInitialized, &clientCond]{
+		{
+			boost::lock_guard<boost::mutex> lock(clientMutex);
+			loadClient();
+			clientInitialized = true;
+		}
+		clientCond.notify_all();
+	});
+	boost::unique_lock<boost::mutex> lock(clientMutex);
+	while (!clientInitialized)
+	{
+		clientCond.wait(lock);
+	}
 #endif  // !YOG_SERVER_ONLY
 }
 
