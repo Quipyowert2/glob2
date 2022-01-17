@@ -25,6 +25,7 @@
 #include <StreamFilter.h>
 #include <BinaryStream.h>
 #include <GUIStyle.h>
+#include "GlobalContainer.h"
 using namespace GAGCore;
 
 #include "GUIMapPreview.h"
@@ -97,7 +98,7 @@ void MapPreview::setMapThumbnail(const MapThumbnail &nthumbnail)
 	if(thumbnail.isLoaded())
 	{
 		surface = new DrawableSurface(128, 128);
-		thumbnail.loadIntoSurface(surface);
+		globalContainer->rthr->pushOrder([this]{thumbnail.loadIntoSurface(surface);});
 	}
 	else
 	{
