@@ -15,7 +15,7 @@ class RenderThreadImpl
 {
 	friend class RenderThread;
 public:
-RenderThreadImpl() :gfx(nullptr), keepRunning(true), state(TITLESCREEN), gui(nullptr), screen(nullptr)
+RenderThreadImpl() :gfx(nullptr), keepRunning(true), states{TITLESCREEN}
 {
 	thread = boost::thread(boost::ref(*this));
 	id = thread.get_id();
@@ -42,19 +42,28 @@ int operator()()
 	{
 		while (queue.empty())
 		{
-			switch (state.load())
+			RenderState state;
+			{
+				boost::lock_guard<boost::mutex> lock(stateMutex);
+				state = states.back();
+			}
+			switch (state)
 			{
 			case TITLESCREEN:
 			case IN_MENU:
-				if (!screen)
-					break;
-				screen.load()->dispatchPaint();
-				break;
-			case IN_GAME:
-				if (!gui)
+				if (screens.empty())
 					break;
 				{
-				GameGUI* g = gui.load();
+				Screen* s = screens.back();
+				std::cout << "RenderThread calling Screen::dispatchPaint(): Screen is " << s << std::endl;
+				s->dispatchPaint();
+				}
+				break;
+			case IN_GAME:
+				if (guis.empty())
+					break;
+				{
+				GameGUI* g = guis.back();
 				// Engine.cpp:511
 				g->drawAll(g->localTeamNo);
 				}
@@ -91,9 +100,10 @@ private:
 	boost::mutex queueMutex;
 	boost::condition_variable queueCond;
 
-	std::atomic<RenderState> state;
-	std::atomic<GameGUI*> gui;
-	std::atomic<Screen*> screen;
+	boost::mutex stateMutex;
+	std::vector<RenderState> states;
+	std::vector<GameGUI*> guis;
+	std::vector<Screen*> screens;
 
 	boost::thread::id id;
 	boost::thread thread;
@@ -110,13 +120,29 @@ GAGCore::GraphicContext* RenderThread::getGfx()
 }
 void RenderThread::setScreen(Screen* s)
 {
-	impl->state = IN_MENU;
-	impl->screen = s;
+	boost::lock_guard<boost::mutex> lock(impl->stateMutex);
+	impl->states.push_back(IN_MENU);
+	impl->screens.push_back(s);
 }
 void RenderThread::setGui(GameGUI* g)
 {
-	impl->state = IN_GAME;
-	impl->gui = g;
+	boost::lock_guard<boost::mutex> lock(impl->stateMutex);
+	impl->states.push_back(IN_GAME);
+	impl->guis.push_back(g);
+}
+void RenderThread::removeScreen(Screen* s)
+{
+	boost::lock_guard<boost::mutex> lock(impl->stateMutex);
+	assert(s == impl->screens[impl->screens.size()-1]);
+	impl->screens.pop_back();
+	impl->states.pop_back();
+}
+void RenderThread::removeGui(GameGUI* g)
+{
+	boost::lock_guard<boost::mutex> lock(impl->stateMutex);
+	assert(g == impl->guis[impl->guis.size()-1]);
+	impl->guis.pop_back();
+	impl->states.pop_back();
 }
 // Pass a parameter-less lambda
 void RenderThread::pushOrder(std::function<void()> f)

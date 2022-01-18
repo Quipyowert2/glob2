@@ -15,6 +15,8 @@ public:
 	GAGCore::GraphicContext* getGfx();
 	void setScreen(Screen* s);
 	void setGui(GameGUI* g);
+	void removeScreen(Screen* s);
+	void removeGui(GameGUI* g);
 	//void setMapEdit();
 	void pushOrder(std::function<void()> f);
 	boost::thread::id getId();
