@@ -1,13 +1,24 @@
 #include "RenderThread.h"
 #include "SDLGraphicContext.h"
+#include "GUIBase.h"
 #include <iostream>
 #include <boost/thread.hpp>
 using namespace GAGCore;
-enum RenderState {
+using namespace GAGGUI;
+enum RenderState
+{
 	TITLESCREEN,
 	IN_MENU,
 	IN_GAME,
 	MAPEDIT
+};
+//Forward declare GameGUI since RenderThread can't include it when RenderThread
+//is moved to libgag
+class GameGUI
+{
+public:
+	void drawAll(int team);
+	int localTeamNo;
 };
 class RenderThreadImpl
 {
