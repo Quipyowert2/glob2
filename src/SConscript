@@ -58,7 +58,6 @@ GlobalContainer.cpp
 Gradient.cpp
 GUIGlob2FileList.cpp
 GUIMapPreview.cpp
-RenderThread.cpp
 HeightMapGenerator.cpp
 IntBuildingType.cpp
 IRC.cpp

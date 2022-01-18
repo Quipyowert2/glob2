@@ -8,6 +8,7 @@ GUIProgressBar.cpp  KeyPress.cpp          Sprite.cpp        StreamBackend.cpp
 Stream.cpp          StreamFilter.cpp      StringTable.cpp   SupportFunctions.cpp
 TextStream.cpp      Toolkit.cpp           TrueTypeFont.cpp  win32_dirent.cpp
 GUITabScreen.cpp    GUITabScreenWindow.cpp  TextSort.cpp    GUICheckList.cpp  
+RenderThread.cpp
 """)
 
 libgag_just_server = Split("""
