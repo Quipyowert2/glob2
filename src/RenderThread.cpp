@@ -1,7 +1,5 @@
 #include "RenderThread.h"
 #include "SDLGraphicContext.h"
-#include "Toolkit.h"
-#include "GlobalContainer.h"
 #include <iostream>
 #include <boost/thread.hpp>
 using namespace GAGCore;
@@ -28,14 +26,6 @@ RenderThreadImpl() :gfx(nullptr), keepRunning(true), states{TITLESCREEN}
 int operator()()
 {
 	std::cout << "RenderThreadImpl::operator() " << std::endl;
-	{
-		boost::lock_guard<boost::mutex> lock(gfxMutex);
-		// create graphic context
-		gfx = Toolkit::initGraphic(globalContainer->settings.screenWidth, globalContainer->settings.screenHeight, globalContainer->settings.screenFlags, "Globulation 2", "glob 2");
-		gfx->setMinRes(640, 480);
-		//gfx->setQuality((settings.optionFlags & OPTION_LOW_SPEED_GFX) != 0 ? GraphicContext::LOW_QUALITY : GraphicContext::HIGH_QUALITY);
-	}
-	gfxInitialized.notify_all();
 
 	//main loop
 	while (keepRunning)

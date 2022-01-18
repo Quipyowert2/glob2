@@ -508,7 +508,10 @@ void GlobalContainer::loadClient(void)
 {
 	if (!runNoX)
 	{
-		assert(gfx);
+		// create graphic context
+		gfx = Toolkit::initGraphic(globalContainer->settings.screenWidth, globalContainer->settings.screenHeight, globalContainer->settings.screenFlags, "Globulation 2", "glob 2");
+		gfx->setMinRes(640, 480);
+		//gfx->setQuality((settings.optionFlags & OPTION_LOW_SPEED_GFX) != 0 ? GraphicContext::LOW_QUALITY : GraphicContext::HIGH_QUALITY);
 
 		// load data required for drawing progress screen
 		title = new DrawableSurface("data/gfx/title.png");
@@ -641,7 +644,7 @@ void GlobalContainer::load(void)
 
 #ifndef YOG_SERVER_ONLY
 	rthr = new RenderThread();
-	gfx = rthr->getGfx();
+
 	std::atomic<bool> clientInitialized;
 	boost::mutex clientMutex;
 	boost::condition_variable clientCond;
