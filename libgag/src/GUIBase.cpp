@@ -414,6 +414,7 @@ namespace GAGGUI
 	
 	Screen::~Screen()
 	{
+		dynamic_cast<GraphicContext*>(gfx)->removeScreen(this);
 		for (std::set<Widget *>::iterator it=widgets.begin(); it!=widgets.end(); ++it)
 		{
 			delete (*it);
@@ -426,6 +427,7 @@ namespace GAGGUI
 		Sint32 frameWaitTime;
 		
 		this->gfx = gfx;
+		dynamic_cast<GraphicContext*>(gfx)->setScreen(this, SCREEN);
 	
 		// init widgets
 		dispatchInit();
@@ -713,6 +715,8 @@ namespace GAGGUI
 	OverlayScreen::OverlayScreen(GraphicContext *parentCtx, unsigned w, unsigned h)
 	{
 		gfx = new DrawableSurface(w, h);
+		this->parentCtx = parentCtx;
+		parentCtx->setScreen(this, SCREEN);
 		decX = (parentCtx->getW()-w)>>1;
 		decY = (parentCtx->getH()-h)>>1;
 		endValue = -1;
@@ -720,6 +724,7 @@ namespace GAGGUI
 	
 	OverlayScreen::~OverlayScreen()
 	{
+		parentCtx->removeScreen(this);
 		delete gfx;
 	}
 	

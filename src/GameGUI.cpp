@@ -4709,6 +4709,8 @@ bool GameGUI::load(GAGCore::InputStream *stream, bool ignoreGUIData)
 	
 	minimap.setGame(game);
 
+	globalContainer->gfx->setScreen(this, GAMEGUI);
+
 	return true;
 }
 

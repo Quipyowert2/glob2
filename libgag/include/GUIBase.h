@@ -359,6 +359,7 @@ namespace GAGGUI
 		int endValue;
 		//! Displacement from top-left corner of screen
 		int decX, decY;
+		GAGCore::GraphicContext* parentCtx;
 	
 	public:
 		//! Constructor, take the context in which the overlay must be create and its dimensions in w and h
