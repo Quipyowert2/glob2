@@ -295,6 +295,15 @@ namespace GAGCore
 
 	//! The description of a video mode
 	typedef std::vector<SDL_DisplayMode> VideoModes;
+	enum ScreenType {
+		SCREEN,
+		GAMEGUI,
+		MAPEDIT,
+	};
+	typedef struct {
+		void* screen; // pointer to Screen, GameGUI, or MapEdit instance
+		ScreenType type;
+	} State;
 	
 	//! A GraphicContext is a DrawableSurface that represent the main screen of the application.
 	class GraphicContext:public DrawableSurface
@@ -320,7 +329,9 @@ namespace GAGCore
 		int minW, minH;
 		SDL_Window *window = nullptr;
 		SDL_GLContext context = nullptr;
+		std::vector<State> states;
 		friend class DrawableSurface;
+		friend int resize_handler(void *userdata, SDL_Event *event);
 		//! option flags
 		Uint32 optionFlags;
 		std::string windowTitle;
@@ -338,6 +349,12 @@ namespace GAGCore
 		virtual void setClipRect(int x, int y, int w, int h);
 		virtual void setClipRect(void);
 		virtual void nextFrame(void);
+
+		// Calls dispatchPaint, drawAll, etc. as appropriate
+		virtual void redraw();
+		virtual void setScreen(void* screen, ScreenType s);
+		virtual void removeScreen(void* screen);
+
 		//! This function does not work for GraphicContext
 		virtual bool loadImage(const std::string name) { return false; }
 		//! This function does not work for GraphicContext

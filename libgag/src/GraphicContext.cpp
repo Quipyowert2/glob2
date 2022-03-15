@@ -21,6 +21,7 @@
 #include <Toolkit.h>
 #include <FileManager.h>
 #include <SupportFunctions.h>
+#include <GUIBase.h>
 #include <assert.h>
 #include <string>
 #include <sstream>
@@ -32,6 +33,15 @@
 #include <valarray>
 #include <cstdlib>
 #include <memory>
+
+
+class GameGUI
+{
+public:
+	void drawAll(int team);
+	int localTeamNo;
+};
+using Screen = GAGGUI::Screen;
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -1960,6 +1970,64 @@ namespace GAGCore
 
 		return modes;
 	}
+	void GraphicContext::setScreen(void* screen, ScreenType type)
+	{
+		assert(screen);
+		State s;
+		s.type = type;
+		s.screen = screen;
+		states.push_back(s);
+	}
+	void GraphicContext::removeScreen(void* screen)
+	{
+		assert(screen);
+		for (auto it = states.begin(); it != states.end(); it++)
+		{
+			if (it->screen == screen)
+				it = states.erase(it);
+		}
+		//states.remove_if(states.begin(), states.end(), [&screen](State s){return s.ptr == screen;});
+	}
+	void GraphicContext::redraw()
+	{
+		State s = states.back();
+		switch (s.type)
+		{
+		case SCREEN:
+			{
+				Screen *scr = (Screen*)s.screen;
+				scr->dispatchPaint();
+				break;
+			}
+		case GAMEGUI:
+		{
+			GameGUI *g = (GameGUI*)s.screen;
+			g->drawAll(g->localTeamNo);
+			break;
+		}
+		case MAPEDIT:
+			assert(!"Unimplemented");
+			break;
+		default:
+			assert(!"Unimplemented");
+			break;
+		}
+	}
+	int SDLCALL resize_handler(void* userdata, SDL_Event *event)
+	{
+		static int lastW = 0, lastH = 0;
+		if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED &&
+			(lastW != event->window.data1 || lastH != event->window.data2))
+		{
+			lastW = event->window.data1;
+			lastH = event->window.data2;
+			std::cout << "Resized to " << event->window.data1 << "x" << event->window.data2 << std::endl;
+			GraphicContext* gc = (GraphicContext*)userdata;
+			gc->setRes(event->window.data1, event->window.data2, gc->optionFlags);
+			gc->redraw();
+		}
+		return 1;
+	}
 
 	GraphicContext::GraphicContext(int w, int h, Uint32 flags, const std::string title, const std::string icon):
 		windowTitle(title),
@@ -1985,6 +2053,8 @@ namespace GAGCore
 		}
 
 		TTF_Init();
+
+		SDL_SetEventFilter(resize_handler, this);
 
 		///If setting the given resolution fails, default to 800x600
 		if(!setRes(w, h, flags))
