@@ -184,10 +184,12 @@ GameGUI::GameGUI()
 	  
 	  ghostManager(game)
 {
+	globalContainer->gfx->registerPainter(PainterType::GAMEGUI, this);
 }
 
 GameGUI::~GameGUI()
 {
+	globalContainer->gfx->unregisterPainter(this);
 	for (ParticleSet::iterator it = particles.begin(); it != particles.end(); ++it)
 		delete *it;
 }

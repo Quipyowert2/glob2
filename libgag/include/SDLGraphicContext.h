@@ -30,7 +30,7 @@
 
 #include <set>
 #include <boost/tuple/tuple.hpp>
-
+#include <boost/any.hpp>
 
 namespace GAGCore
 {
@@ -75,6 +75,11 @@ namespace GAGCore
 		static Color white; //!< black color (255,255,255)
 	};
 	
+	enum PainterType {
+		SCREEN,
+		GAMEGUI,
+		MAPEDIT,
+	};
 	//! Deprecated, for compatibility only. Eventually, all Color32 should be removed or changed to Color
 	typedef Color Color32;
 	
@@ -325,6 +330,7 @@ namespace GAGCore
 		Uint32 optionFlags;
 		std::string windowTitle;
 		std::string appIcon;
+		std::vector<std::pair<PainterType, boost::any>> painters;
 		
 	public:
 		//! Constructor. Create a new window of size (w,h). If useGPU is true, use GPU for accelerated 2D (OpenGL or DX)
@@ -345,6 +351,10 @@ namespace GAGCore
 		//! This function does not work for GraphicContext
 		virtual void shiftHSV(float hue, float sat, float lum) { }
 		
+		virtual void redraw();
+		virtual void registerPainter(PainterType p, boost::any a);
+		virtual void unregisterPainter(boost::any a);
+
 		// reimplemented drawing commands for HW (GPU / GL) accelerated version
 		virtual bool canDrawStretchedSprite(void) { return (optionFlags & USEGPU) != 0; }
 		

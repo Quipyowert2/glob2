@@ -21,6 +21,7 @@
 #include <Toolkit.h>
 #include <FileManager.h>
 #include <SupportFunctions.h>
+#include <GUIBase.h>
 #include <assert.h>
 #include <string>
 #include <sstream>
@@ -55,6 +56,15 @@
 
 //extern "C" { SDL_PixelFormat *SDL_AllocFormat(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask); }
 
+
+// Forward declaration for GraphicContext::redraw()
+class GameGUI
+{
+public:
+	int localTeamNo;
+	void drawAll(int team);
+};
+
 namespace GAGCore
 {
 	// static local pointer to the actual graphic context
@@ -63,6 +73,33 @@ namespace GAGCore
 	//EXPERIMENTAL is a bit buggy and "not EXPERIMENTAL" is bugfree but slow
 	//when rendering clouds or other density layers (GraphicContext::drawAlphaMap).
 	static const bool EXPERIMENTAL=false;
+
+	int resize_handler(void* userdata, SDL_Event* event)
+	{
+		switch (event->type)
+		{
+			case SDL_WINDOWEVENT:
+			{
+				if (event->window.event == SDL_WINDOWEVENT_RESIZED)
+				{
+					printf("Resized to %dx%d\n", event->window.data1, event->window.data2);
+					fflush(stdout);
+					GraphicContext* gfx = reinterpret_cast<GraphicContext*>(userdata);
+					gfx->setRes(event->window.data1, event->window.data2);
+					gfx->redraw();
+				}
+
+				else if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+				{
+					printf("Resized(SIZE_CHANGED) to %dx%d\n", event->window.data1, event->window.data2);
+					fflush(stdout);
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
 
 	// Color
 	Uint32 Color::pack() const
@@ -1961,6 +1998,44 @@ namespace GAGCore
 		return modes;
 	}
 
+	void GraphicContext::redraw()
+	{
+		using GAGGUI::Screen;
+		for (auto it = painters.begin(); it < painters.end(); it++)
+		{
+			switch (it->first)
+			{
+			case PainterType::GAMEGUI:
+			{
+				GameGUI* gui = boost::any_cast<GameGUI*>(it->second);
+				gui->drawAll(gui->localTeamNo);
+				break;
+			}
+			case PainterType::SCREEN:
+			{
+				Screen* screen = boost::any_cast<Screen*>(it->second);
+				screen->dispatchPaint();
+				break;
+			}
+			}
+		}
+	}
+	void GraphicContext::registerPainter(PainterType p, boost::any a)
+	{
+		painters.push_back(std::make_pair(p, a));
+	}
+	void GraphicContext::unregisterPainter(boost::any a)
+	{
+		void* p = boost::any_cast<void*>(a);
+		for (auto it = painters.begin(); it < painters.end(); it++)
+		{
+			if (boost::any_cast<void*>(it->second) == p)
+			{
+				it = painters.erase(it);
+			}
+		}
+	}
+
 	GraphicContext::GraphicContext(int w, int h, Uint32 flags, const std::string title, const std::string icon):
 		windowTitle(title),
 		appIcon(icon)
@@ -1995,6 +2070,7 @@ namespace GAGCore
 				exit(1);
 			}
 		}
+		SDL_AddEventWatch(&resize_handler, this);
 	}
 
 	GraphicContext::~GraphicContext(void)

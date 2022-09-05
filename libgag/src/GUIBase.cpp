@@ -414,6 +414,7 @@ namespace GAGGUI
 	
 	Screen::~Screen()
 	{
+		dynamic_cast<GraphicContext*>(gfx)->unregisterPainter(this);
 		for (std::set<Widget *>::iterator it=widgets.begin(); it!=widgets.end(); ++it)
 		{
 			delete (*it);
@@ -429,6 +430,8 @@ namespace GAGGUI
 	
 		// init widgets
 		dispatchInit();
+
+		dynamic_cast<GraphicContext*>(gfx)->registerPainter(PainterType::SCREEN, this);
 		
 		// create screen event
 		onAction(NULL, SCREEN_CREATED, 0, 0);

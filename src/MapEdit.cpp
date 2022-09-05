@@ -822,6 +822,7 @@ MapEdit::MapEdit()
             128, // height
             Minimap::HideFOW)
 {
+	globalContainer->gfx->registerPainter(PainterType::MAPEDIT, this);
 	doQuit=false;
 	doFullQuit=false;
 	doQuitAfterLoadSave=false;
@@ -1107,6 +1108,7 @@ MapEdit::MapEdit()
 
 MapEdit::~MapEdit()
 {
+	globalContainer->gfx->unregisterPainter(this);
 	Toolkit::releaseSprite("data/gui/editor");
 	for(std::vector<MapEditorWidget*>::iterator i=mew.begin(); i!=mew.end(); ++i)
 	{
