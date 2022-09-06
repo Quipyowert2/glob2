@@ -80,6 +80,7 @@ public:
 	void adjustLocalTeam();
 	//! Handle mouse, keyboard and window resize inputs, and stats
 	void step(void);
+	void syncStep(Sint32 localTeam);
 	//! Get order from gui, return NullOrder if
 	boost::shared_ptr<Order> getOrder(void);
 	//! Return position on x

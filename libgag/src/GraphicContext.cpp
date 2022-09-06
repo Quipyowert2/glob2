@@ -56,13 +56,13 @@
 
 //extern "C" { SDL_PixelFormat *SDL_AllocFormat(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask); }
 
-
 // Forward declaration for GraphicContext::redraw()
 class GameGUI
 {
 public:
 	int localTeamNo;
 	void drawAll(int team);
+	void syncStep(Sint32 localTeamNo);
 };
 
 namespace GAGCore
@@ -2008,6 +2008,7 @@ namespace GAGCore
 			case PainterType::GAMEGUI:
 			{
 				GameGUI* gui = boost::any_cast<GameGUI*>(it->second);
+				gui->syncStep(gui->localTeamNo);
 				gui->drawAll(gui->localTeamNo);
 				nextFrame();
 				break;

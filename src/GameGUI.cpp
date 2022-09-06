@@ -4305,6 +4305,11 @@ void GameGUI::drawOverlayInfos(void)
 	drawTopScreenBar();
 }
 
+void GameGUI::syncStep(Sint32 localTeamNo)
+{
+	game.syncStep(localTeamNo);
+}
+
 void GameGUI::drawInGameMenu(void)
 {
 	gameMenuScreen->dispatchPaint();
