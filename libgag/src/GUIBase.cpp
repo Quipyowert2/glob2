@@ -410,11 +410,12 @@ namespace GAGGUI
 		gfx = NULL;
 		returnCode = 0;
 		run = false;
+		dontRegister = false;
 	}
 	
 	Screen::~Screen()
 	{
-		dynamic_cast<GraphicContext*>(gfx)->unregisterPainter(this);
+		if (!dontRegister) dynamic_cast<GraphicContext*>(gfx)->unregisterPainter(PainterType::SCREEN, this);
 		for (std::set<Widget *>::iterator it=widgets.begin(); it!=widgets.end(); ++it)
 		{
 			delete (*it);
@@ -431,7 +432,7 @@ namespace GAGGUI
 		// init widgets
 		dispatchInit();
 
-		dynamic_cast<GraphicContext*>(gfx)->registerPainter(PainterType::SCREEN, this);
+		if (!dontRegister) dynamic_cast<GraphicContext*>(gfx)->registerPainter(PainterType::SCREEN, this);
 		
 		// create screen event
 		onAction(NULL, SCREEN_CREATED, 0, 0);
@@ -718,11 +719,15 @@ namespace GAGGUI
 		gfx = new DrawableSurface(w, h);
 		decX = (parentCtx->getW()-w)>>1;
 		decY = (parentCtx->getH()-h)>>1;
+		this->parentCtx = parentCtx;
+		dontRegister = true;
+		parentCtx->registerPainter(PainterType::SCREEN, this);
 		endValue = -1;
 	}
 	
 	OverlayScreen::~OverlayScreen()
 	{
+		parentCtx->unregisterPainter(PainterType::SCREEN, this);
 		delete gfx;
 	}
 	

@@ -306,6 +306,9 @@ namespace GAGGUI
 		
 		//! the graphic context associated with this screen
 		GAGCore::DrawableSurface *gfx;
+
+		// OverlayScreen registers itself with GraphicContext, so don't register in Screen
+		bool dontRegister = false;
 		
 	public:
 		//! The animation frame for screen creation
@@ -359,6 +362,9 @@ namespace GAGGUI
 		int endValue;
 		//! Displacement from top-left corner of screen
 		int decX, decY;
+
+	protected:
+		GAGCore::GraphicContext* parentCtx;
 	
 	public:
 		//! Constructor, take the context in which the overlay must be create and its dimensions in w and h

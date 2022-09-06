@@ -353,7 +353,7 @@ namespace GAGCore
 		
 		virtual void redraw();
 		virtual void registerPainter(PainterType p, boost::any a);
-		virtual void unregisterPainter(boost::any a);
+		virtual void unregisterPainter(PainterType p, boost::any a);
 
 		// reimplemented drawing commands for HW (GPU / GL) accelerated version
 		virtual bool canDrawStretchedSprite(void) { return (optionFlags & USEGPU) != 0; }

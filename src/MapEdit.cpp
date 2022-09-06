@@ -1108,7 +1108,7 @@ MapEdit::MapEdit()
 
 MapEdit::~MapEdit()
 {
-	globalContainer->gfx->unregisterPainter(this);
+	globalContainer->gfx->unregisterPainter(PainterType::MAPEDIT, this);
 	Toolkit::releaseSprite("data/gui/editor");
 	for(std::vector<MapEditorWidget*>::iterator i=mew.begin(); i!=mew.end(); ++i)
 	{

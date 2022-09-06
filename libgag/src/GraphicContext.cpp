@@ -2024,15 +2024,41 @@ namespace GAGCore
 	{
 		painters.push_back(std::make_pair(p, a));
 	}
-	void GraphicContext::unregisterPainter(boost::any a)
+	void GraphicContext::unregisterPainter(PainterType p, boost::any a)
 	{
-		void* p = boost::any_cast<void*>(a);
+		using GAGGUI::Screen;
 		for (auto it = painters.begin(); it < painters.end(); it++)
 		{
-			if (boost::any_cast<void*>(it->second) == p)
+			if (it->first == p)
+			switch (it->first)
+			{
+			case PainterType::GAMEGUI:
+				if (boost::any_cast<GameGUI*>(it->second) == boost::any_cast<GameGUI*>(a))
+				{
+					it = painters.erase(it);
+				}
+				break;
+			case PainterType::SCREEN:
+				if (boost::any_cast<Screen*>(it->second) == boost::any_cast<Screen*>(a))
+				{
+					it = painters.erase(it);
+				}
+				break;
+			/*case PainterType::MAPEDIT:
+				if (boost::any_cast<MapEdit*>(it->second) == boost::any_cast<MapEdit*>(a))
+				{
+					it = painters.erase(it);
+				}
+				break;
+			*/
+			default:
+				throw std::runtime_error("unregisterPainter: bad type for it->first");
+				break;
+			}
+			/*if (boost::any_cast<void*>(it->second) == p)
 			{
 				it = painters.erase(it);
-			}
+			}*/
 		}
 	}
 

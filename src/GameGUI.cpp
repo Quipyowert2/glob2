@@ -189,7 +189,7 @@ GameGUI::GameGUI()
 
 GameGUI::~GameGUI()
 {
-	globalContainer->gfx->unregisterPainter(this);
+	globalContainer->gfx->unregisterPainter(PainterType::GAMEGUI, this);
 	for (ParticleSet::iterator it = particles.begin(); it != particles.end(); ++it)
 		delete *it;
 }
