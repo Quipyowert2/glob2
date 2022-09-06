@@ -2009,11 +2009,13 @@ namespace GAGCore
 			{
 				GameGUI* gui = boost::any_cast<GameGUI*>(it->second);
 				gui->drawAll(gui->localTeamNo);
+				nextFrame();
 				break;
 			}
 			case PainterType::SCREEN:
 			{
 				Screen* screen = boost::any_cast<Screen*>(it->second);
+				screen->dispatchTimer(SDL_GetTicks());
 				screen->dispatchPaint();
 				break;
 			}
