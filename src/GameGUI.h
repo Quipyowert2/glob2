@@ -439,7 +439,7 @@ private:
 	void setMultiLine(const std::string &input, std::vector<std::string> *output, std::string indent="");
 	
 	// Typing stuff :
-	InGameTextInput *typingInputScreen;
+	boost::shared_ptr<InGameTextInput> typingInputScreen;
 	int typingInputScreenPos;
 	int typingInputScreenInc;
 

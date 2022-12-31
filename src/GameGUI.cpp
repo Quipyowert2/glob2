@@ -58,6 +58,9 @@
 
 #include <SDL_keycode.h>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
 #define TYPING_INPUT_BASE_INC 7
 #define TYPING_INPUT_MAX_POS 46
 
@@ -1289,7 +1292,7 @@ void GameGUI::handleKey(SDL_Keysym key, bool pressed)
 				break;
 				case GameGUIKeyActions::OpenChatBox:
 				{
-					typingInputScreen=new InGameTextInput(globalContainer->gfx);
+					typingInputScreen=make_shared<InGameTextInput>(globalContainer->gfx);
 					typingInputScreenInc=TYPING_INPUT_BASE_INC;
 					typingInputScreenPos=0;
 				}
@@ -4355,8 +4358,7 @@ void GameGUI::drawInGameTextInput(void)
 		else
 		{
 			typingInputScreenInc=0;
-			delete typingInputScreen;
-			typingInputScreen=NULL;
+			typingInputScreen.reset();
 		}
 	}
 }
