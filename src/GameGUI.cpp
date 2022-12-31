@@ -55,6 +55,7 @@
 #include "ReplayWriter.h"
 #include "config.h"
 #include "Order.h"
+#include "find_make_unique.h"
 
 #include <SDL_keycode.h>
 
@@ -1294,7 +1295,7 @@ void GameGUI::handleKey(SDL_Keysym key, bool pressed)
 				break;
 				case GameGUIKeyActions::OpenChatBox:
 				{
-					typingInputScreen=new InGameTextInput(globalContainer->gfx);
+					typingInputScreen=make_unique<InGameTextInput>(globalContainer->gfx);
 					typingInputScreenInc=TYPING_INPUT_BASE_INC;
 					typingInputScreenPos=0;
 				}
@@ -4365,8 +4366,7 @@ void GameGUI::drawInGameTextInput(void)
 		else
 		{
 			typingInputScreenInc=0;
-			delete typingInputScreen;
-			typingInputScreen=NULL;
+			typingInputScreen.reset();
 		}
 	}
 }
