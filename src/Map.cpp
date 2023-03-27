@@ -920,6 +920,37 @@ void Map::logAtClear()
 	#endif
 }
 
+void Map::setBuilding(int x, int y, int w, int h, Uint16 gbid)
+{
+	if (gbid == NOGBID)
+	{
+		Uint16 gbidToErase = cases[coordToIndex(x,y)].building;
+		if (gbidToErase != NOGBID)
+		{
+			// Find actual size of building.
+			for (int xi=x;xi<=x+MAX_BUILDING_WIDTH;xi++)
+			{
+				if (cases[coordToIndex(xi,y)].building == gbidToErase)
+				{
+					w = xi-x+1;
+				}
+				else break;
+			}
+			for (int yi=y;yi<=y+MAX_BUILDING_HEIGHT;yi++)
+			{
+				if (cases[coordToIndex(x,yi)].building == gbidToErase)
+				{
+					h = yi-y+1;
+				}
+				else break;
+			}
+		}
+	}
+	for (int yi=y; yi<y+h; yi++)
+		for (int xi=x; xi<x+w; xi++)
+			cases[coordToIndex(xi, yi)].building = gbid;
+}
+
 void Map::setSize(int wDec, int hDec, TerrainType terrainType)
 {
 	clear();

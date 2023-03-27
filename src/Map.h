@@ -40,6 +40,9 @@ class Unit;
 //! No global building identifier. This value means there is no building. Used at Case::building.
 #define NOGBID 0xFFFF
 
+#define MAX_BUILDING_WIDTH 6
+#define MAX_BUILDING_HEIGHT 6
+
 class Map;
 class Game;
 class MapGenerationDescriptor;
@@ -477,12 +480,7 @@ public:
 	
 	void setGroundUnit(int x, int y, Uint16 guid) { cases[coordToIndex(x, y)].groundUnit = guid; }
 	void setAirUnit(int x, int y, Uint16 guid) { cases[coordToIndex(x, y)].airUnit = guid; }
-	void setBuilding(int x, int y, int w, int h, Uint16 gbid)
-	{
-		for (int yi=y; yi<y+h; yi++)
-			for (int xi=x; xi<x+w; xi++)
-				cases[coordToIndex(xi, yi)].building = gbid;
-	}
+	void setBuilding(int x, int y, int w, int h, Uint16 gbid);
 	
 	//! Return sector at (x,y).
 	Sector *getSector(int x, int y) { return &(sectors[wSector*((y&hMask)>>4)+((x&wMask)>>4)]); }

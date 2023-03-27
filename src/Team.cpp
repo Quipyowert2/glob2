@@ -1039,6 +1039,7 @@ void Team::syncStep(void)
 			game->selectedBuilding=NULL;
 
 		myBuildings[Building::GIDtoID(building->gid)]=NULL;
+		map->setBuilding(building->posX, building->posY, building->type->width, building->type->height, NOGBID);
 		delete building;
 	}
 
