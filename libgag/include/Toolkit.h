@@ -58,7 +58,7 @@ namespace GAGCore
 		
 		#endif
 		static FileManager *getFileManager(void) { return fileManager; }
-		static StringTable *const getStringTable(void) { return strings; }
+		static StringTable *getStringTable(void) { return strings; }
 		
 	protected:
 		#ifndef YOG_SERVER_ONLY
