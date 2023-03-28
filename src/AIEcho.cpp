@@ -4142,7 +4142,7 @@ building_search_iterator::building_search_iterator(BuildingSearch& search) : fou
 
 
 
-const unsigned int building_search_iterator::operator*()
+unsigned int building_search_iterator::operator*()
 {
 	return found_id;
 }
@@ -4270,7 +4270,7 @@ enemy_team_iterator::enemy_team_iterator() : team_number(-1), is_end(true), echo
 }
 
 
-const unsigned int enemy_team_iterator::operator*()
+unsigned int enemy_team_iterator::operator*()
 {
 	return team_number;
 }
@@ -4359,7 +4359,7 @@ enemy_building_iterator::enemy_building_iterator(Echo& echo, int team, int build
 
 
 
-const unsigned int enemy_building_iterator::operator*()
+unsigned int enemy_building_iterator::operator*()
 {
 	return current_gid;
 }

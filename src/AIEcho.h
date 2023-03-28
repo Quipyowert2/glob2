@@ -1454,7 +1454,7 @@ namespace AIEcho
 		class building_search_iterator
 		{
 		public:
-			const unsigned int operator*();
+			unsigned int operator*();
 			building_search_iterator& operator++();
 			building_search_iterator operator++(int);
 			bool operator!=(const building_search_iterator& rhs) const;
@@ -1504,7 +1504,7 @@ namespace AIEcho
 		public:
 			explicit enemy_team_iterator(Echo& echo);
 			enemy_team_iterator();
-			const unsigned int operator*();
+			unsigned int operator*();
 			enemy_team_iterator& operator++();
 			enemy_team_iterator operator++(int);
 			bool operator!=(const enemy_team_iterator& rhs) const;
@@ -1540,7 +1540,7 @@ namespace AIEcho
 			///the same thing applies, its a wildcard, any building will match.
 			enemy_building_iterator(Echo& echo, int team, int building_type, int level, boost::logic::tribool construction_site);
 
-			const unsigned int operator*();
+			unsigned int operator*();
 			enemy_building_iterator& operator++();
 			enemy_building_iterator operator++(int);
 			bool operator!=(const enemy_building_iterator& rhs) const;
