@@ -41,7 +41,7 @@ namespace GAGCore
 		backend->write(string.c_str(), string.size());
 	}
 	
-	void TextOutputStream::write(const void *data, const size_t size, const std::string name)
+	void TextOutputStream::write(const void *data, const size_t size, const std::string &name)
 	{
 		printLevel();
 		if (name.size())
@@ -59,7 +59,7 @@ namespace GAGCore
 		printString(";\n");
 	}
 	
-	void TextOutputStream::writeText(const std::string &v, const std::string name)
+	void TextOutputStream::writeText(const std::string &v, const std::string &name)
 	{
 		printLevel();
 		if (name.size())
@@ -75,7 +75,7 @@ namespace GAGCore
 		printString("\";\n");
 	}
 	
-	void TextOutputStream::writeEnterSection(const std::string name)
+	void TextOutputStream::writeEnterSection(const std::string &name)
 	{
 		printLevel();
 		printString(name);
@@ -471,7 +471,7 @@ namespace GAGCore
 			std::cout << i->first << " = " << i->second << std::endl;*/
 	}
 	
-	void TextInputStream::readEnterSection(const std::string name)
+	void TextInputStream::readEnterSection(const std::string &name)
 	{
 		if (levels.size() > 0)
 			key += ".";
@@ -506,7 +506,7 @@ namespace GAGCore
 		}
 	}
 	
-	void TextInputStream::readFromTableToString(const std::string name, std::string *result)
+	void TextInputStream::readFromTableToString(const std::string &name, std::string *result)
 	{
 		assert(result);
 		
@@ -530,7 +530,7 @@ namespace GAGCore
 		}
 	}
 	
-	void TextInputStream::read(void *data, size_t size, const std::string name)
+	void TextInputStream::read(void *data, size_t size, const std::string &name)
 	{
 		std::string s;
 		readFromTableToString(name, &s);
