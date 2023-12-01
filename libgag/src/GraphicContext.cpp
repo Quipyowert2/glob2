@@ -2139,11 +2139,18 @@ namespace GAGCore
 		// remove GL from options
 		optionFlags &= ~USEGPU;
 		#endif
+		static EventListener* el = nullptr;
+
+		if (!el)
+			el = EventListener::instance();
 
 		// if window exists, resize it
 		if (window) {
-			SDL_SetWindowSize(window, w, h);
-			SDL_SetWindowResizable(window, SDL_TRUE);
+			if (!el || !el->isResizing())
+			{
+				SDL_SetWindowSize(window, w, h);
+				SDL_SetWindowResizable(window, SDL_TRUE);
+			}
 			getOrCreateSurface(w, h, flags);
 #ifdef HAVE_OPENGL
 			if (flags & USEGPU)
@@ -2310,6 +2317,14 @@ namespace GAGCore
 				resizeTimer++;
 			}
 			framesDrawn++;
+			#ifdef HAVE_OPENGL
+			if (optionFlags & GraphicContext::USEGPU)
+			{
+				setClipRect();
+				glClearColor(0, 0, 0, 255);
+				glClear(GL_COLOR_BUFFER_BIT);
+			}
+			#endif
 		}
 	}
 
