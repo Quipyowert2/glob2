@@ -33,6 +33,7 @@
 
 namespace GAGCore {
 extern std::queue<SDL_Event> events;
+extern bool skipNextFrame;
 class EventListener {
 public:
 	EventListener(GraphicContext* gfx);

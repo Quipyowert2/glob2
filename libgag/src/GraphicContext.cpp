@@ -2279,6 +2279,9 @@ namespace GAGCore
 
 	void GraphicContext::nextFrame(void)
 	{
+		// Avoids showing a blank frame for a split second when called from EventListener::paint.
+		if (skipNextFrame)
+			return;
 		DrawableSurface::nextFrame();
 		if (sdlsurface)
 		{

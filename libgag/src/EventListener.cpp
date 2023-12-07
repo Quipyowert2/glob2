@@ -36,6 +36,7 @@ std::condition_variable EventListener::startedCond;
 std::mutex EventListener::doneMutex;
 std::condition_variable EventListener::doneCond;
 std::recursive_mutex EventListener::renderMutex;
+bool skipNextFrame = false;
 
 #define SIZE_MOVE_TIMER_ID 1
 
@@ -117,10 +118,12 @@ void EventListener::paint()
 	{
 		std::unique_lock<std::recursive_mutex> lock(renderMutex);
 		gfx->createGLContext();
+		skipNextFrame = true;
 		for (std::multimap<const std::string, std::function<void()> >::iterator it = painters.begin(); it != painters.end(); ++it)
 		{
 			it->second();
 		}
+		skipNextFrame = false;
 		gfx->nextFrame();
 	}
 	depth--;
