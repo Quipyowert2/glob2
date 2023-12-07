@@ -2098,6 +2098,7 @@ namespace GAGCore
 	bool GraphicContext::setRes(int w, int h, Uint32 flags)
 	{
 		static bool isLoading = true;
+		static bool doneLoading = false;
 		// check dimension
 		if (minW && (w < minW))
 		{
@@ -2146,10 +2147,12 @@ namespace GAGCore
 
 		// if window exists, resize it
 		if (window) {
-			if (!el || !el->isResizing())
+			if (!(el && el->isResizing()) // not currently resizing
+				|| (!isLoading && !doneLoading)) // not in loading screen or just finished loading
 			{
 				SDL_SetWindowSize(window, w, h);
 				SDL_SetWindowResizable(window, SDL_TRUE);
+				doneLoading = true;
 			}
 			getOrCreateSurface(w, h, flags);
 #ifdef HAVE_OPENGL
