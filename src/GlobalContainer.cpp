@@ -487,6 +487,8 @@ void GlobalContainer::parseArgs(int argc, char *argv[])
 #ifndef YOG_SERVER_ONLY
 void GlobalContainer::updateLoadProgressScreen(int value)
 {
+	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+	gfx->createGLContext();
 	unsigned randomSeed = 1;
 	unsigned columnCount = gfx->getW() / 32;
 	unsigned limit = (value * columnCount) / 100;
@@ -507,6 +509,7 @@ void GlobalContainer::updateLoadProgressScreen(int value)
 	gfx->drawSurface((gfx->getW()-title->getW())>>1, (gfx->getH()-title->getH())>>1, title);
 	//gfx->drawFilledRect(((gfx->getW()-400)>>1), (gfx->getH()>>1)+11+180, (value)<<2, 20, 10, 50, 255, 80);
 	gfx->nextFrame();
+	gfx->createGLContext();
 }
 
 EventListener* el = NULL;
@@ -640,6 +643,7 @@ void GlobalContainer::loadClient(bool runEventListener)
 		Style::style = new Glob2Style;
 
 		updateLoadProgressScreen(100);
+		gfx->createGLContext();
 		gfx->setRes(gfx->getW(), gfx->getH());
 	}
 }

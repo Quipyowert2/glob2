@@ -163,6 +163,8 @@ namespace GAGCore
 	
 	DrawableSurface *TrueTypeFont::getStringCached(const std::string text)
 	{
+		if (GraphicContext::instance()->getOptionFlags() & GraphicContext::USEGPU)
+			assert(SDL_GL_GetCurrentContext());
 		assert(font);
 		assert(styleStack.size()>0);
 		
@@ -252,6 +254,8 @@ namespace GAGCore
 	
 	void TrueTypeFont::drawString(DrawableSurface *surface, int x, int y, int w, const std::string text, Uint8 alpha)
 	{
+		if (GraphicContext::instance()->getOptionFlags() & GraphicContext::USEGPU)
+			assert(SDL_GL_GetCurrentContext());
 		// get
 		DrawableSurface *s = getStringCached(text);
 		if (s == NULL)
@@ -277,6 +281,8 @@ namespace GAGCore
 	
 	void TrueTypeFont::drawString(DrawableSurface *surface, float x, float y, float w, const std::string text, Uint8 alpha)
 	{
+		if (GraphicContext::instance()->getOptionFlags() & GraphicContext::USEGPU)
+			assert(SDL_GL_GetCurrentContext());
 		// get
 		DrawableSurface *s = getStringCached(text);
 		if (s == NULL)

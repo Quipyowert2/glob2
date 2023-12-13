@@ -119,12 +119,11 @@ void EventListener::paint()
 		std::unique_lock<std::recursive_mutex> lock(renderMutex);
 		gfx->createGLContext();
 		skipNextFrame = true;
-		for (std::multimap<const std::string, std::function<void()> >::iterator it = painters.begin(); it != painters.end(); ++it)
-		{
-			it->second();
-		}
+		std::multimap<const std::string, std::function<void()> >::iterator it = painters.begin();
+		it->second();
 		skipNextFrame = false;
 		gfx->nextFrame();
+		gfx->unsetContext();
 	}
 	depth--;
 }

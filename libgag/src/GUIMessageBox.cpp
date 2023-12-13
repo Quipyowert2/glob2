@@ -64,6 +64,8 @@ namespace GAGGUI
 	
 	int MessageBox(GraphicContext *parentCtx, const std::string font, MessageBoxType type, std::string title, std::string caption1, std::string caption2, std::string caption3)
 	{
+		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+		EventListener::ensureContext();
 		// for passing captions to class
 		std::string captionArray[3]={
 			caption1,

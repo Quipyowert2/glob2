@@ -363,6 +363,8 @@ Uint32 InGameAllianceScreen::getChatMask(void)
 InGameOptionScreen::InGameOptionScreen(GameGUI *gameGUI)
 :OverlayScreen(globalContainer->gfx, 320, 300)
 {
+	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+	EventListener::ensureContext();
 	Text *audioMuteText=new Text(10, 20, ALIGN_LEFT, ALIGN_TOP, "standard", Toolkit::getStringTable()->getString("[Mute]"), 200);
 	addWidget(audioMuteText);
 

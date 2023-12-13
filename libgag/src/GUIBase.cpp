@@ -476,10 +476,12 @@ namespace GAGGUI
 						wasWindowEvent=true;
 						if (event.window.event == SDL_WINDOWEVENT_RESIZED)
 						{
-
 							// FIXME: window resize is broken
+							std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+							EventListener::ensureContext();
 							gfx->setRes(event.window.data1, event.window.data2);
 							onAction(NULL, SCREEN_RESIZED, gfx->getW(), gfx->getH());
+							GraphicContext::instance()->unsetContext();
 						}
 					}
 					break;
@@ -521,8 +523,11 @@ namespace GAGGUI
 			GraphicContext* gfx = GraphicContext::instance();
 			if (gfx->resChanged()) {
 				SDL_Rect r = gfx->getRes();
+				std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+				gfx->createGLContext();
 				gfx->setRes(r.w, r.h);
 				onAction(NULL, SCREEN_RESIZED, gfx->getW(), gfx->getH());
+				gfx->unsetContext();
 			}
 			if (hadLastMouseMotion)
 				dispatchEvents(&lastMouseMotion);
@@ -531,6 +536,7 @@ namespace GAGGUI
 				
 			// draw
 			dispatchPaint();
+			gfx->unsetContext();
 	
 			// wait timer
 			frameWaitTime=SDL_GetTicks()-frameStartTime;
@@ -653,6 +659,7 @@ namespace GAGGUI
 				break;
 
 		}
+		GraphicContext::instance()->unsetContext();
 	}
 	
 	void Screen::dispatchTimer(Uint32 tick)
@@ -667,6 +674,8 @@ namespace GAGGUI
 	
 	void Screen::dispatchInit(void)
 	{
+		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+		EventListener::ensureContext();
 		animationFrame = 0;
 		for (std::set<Widget *>::iterator it=widgets.begin(); it!=widgets.end(); ++it)
 		{

@@ -96,6 +96,8 @@ namespace GAGCore
 		#ifndef YOG_SERVER_ONLY
 	Sprite *Toolkit::getSprite(const std::string name)
 	{
+		if (GraphicContext::instance()->getOptionFlags() & GraphicContext::USEGPU)
+			assert(SDL_GL_GetCurrentContext());
 		assert(name.size());
 		if (spriteMap.find(name) == spriteMap.end())
 		{

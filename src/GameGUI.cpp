@@ -481,8 +481,11 @@ void GameGUI::step(void)
 	}
 	GraphicContext* gfx = GraphicContext::instance();
 	if (gfx->resChanged()) {
+		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
 		SDL_Rect r = gfx->getRes();
+		gfx->createGLContext();
 		gfx->setRes(r.w, r.h);
+		gfx->unsetContext();
 	}
 	if (wasMouseMotion)
 		processEvent(&mouseMotionEvent);
@@ -4589,6 +4592,8 @@ void GameGUI::executeOrder(boost::shared_ptr<Order> order)
 		break;
 		case ORDER_PLAYER_QUIT_GAME :
 		{
+			std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+			EventListener::ensureContext();
 			int qp=order->sender;
 			if (qp==localPlayer)
 				isRunning=false;

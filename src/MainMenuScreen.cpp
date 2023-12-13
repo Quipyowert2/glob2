@@ -43,6 +43,8 @@ using namespace GAGCore;
 
 MainMenuScreen::MainMenuScreen()
 {
+	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+	EventListener::ensureContext();
 	addWidget(new TextButton( 10, 100, 300,  40, ALIGN_SCREEN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", Toolkit::getStringTable()->getString("[campaign]"), CAMPAIGN));
 	
 	addWidget(new TextButton( 330, 100, 300,  40, ALIGN_SCREEN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", Toolkit::getStringTable()->getString("[tutorial]"), TUTORIAL));

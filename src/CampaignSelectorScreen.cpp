@@ -21,9 +21,12 @@
 #include "StringTable.h"
 #include "Toolkit.h"
 #include "Campaign.h"
+#include "EventListener.h"
 
 CampaignSelectorScreen::CampaignSelectorScreen(bool isSelectingSave)
 {
+	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+	EventListener::ensureContext();
 	StringTable& table=*Toolkit::getStringTable();
 	title = new Text(0, 18, ALIGN_FILL, ALIGN_SCREEN_CENTERED, "menu", table.getString("[choose campaign]"));
 	ok = new TextButton(440, 360, 180, 40, ALIGN_SCREEN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", table.getString("[ok]"), OK, 13);

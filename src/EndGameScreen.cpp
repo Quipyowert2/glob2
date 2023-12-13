@@ -339,6 +339,8 @@ struct MoreScore
 
 EndGameScreen::EndGameScreen(GameGUI *gui)
 {
+	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+	EventListener::ensureContext();
 	// We're no longer replaying a game
 	globalContainer->replaying = false;
 

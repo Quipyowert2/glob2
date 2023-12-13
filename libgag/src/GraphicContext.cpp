@@ -350,7 +350,8 @@ namespace GAGCore
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
 			std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-			EventListener::ensureContext();
+			assert(SDL_GL_GetCurrentContext());
+			//EventListener::ensureContext();
 			glState.setTexture(texture);
 
 			void *pixelsPtr;
@@ -1073,10 +1074,10 @@ namespace GAGCore
 
 	void DrawableSurface::drawSurface(int x, int y, DrawableSurface *surface, int sx, int sy, int sw, int sh, Uint8 alpha)
 	{
-		if (surface != _gc && (surface->dirty || _gc->isResizing()))
-			surface->uploadToTexture();
-		if (this != _gc && (this->dirty || _gc->isResizing()))
-			this->uploadToTexture();
+		//if (surface != _gc && (surface->dirty || _gc->isResizing()))
+		//	surface->uploadToTexture();
+		//if (this != _gc && (this->dirty || _gc->isResizing()))
+		//	this->uploadToTexture();
 		if (alpha == Color::ALPHA_OPAQUE)
 		{
 			#ifdef HAVE_OPENGL
@@ -1679,7 +1680,7 @@ namespace GAGCore
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
 			// upload
-			if (surface->dirty || isResizing())
+			if (surface->dirty)
 				surface->uploadToTexture();
 
 			// state change
@@ -2027,23 +2028,34 @@ namespace GAGCore
 	std::mutex m;
 	void GraphicContext::createGLContext()
 	{
+#ifdef HAVE_OPENGL
 		// enable GL context
 		if (optionFlags & USEGPU)
 		{
 			std::lock_guard<std::mutex> l(m);
+			std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
 			if (!context)
 			    context = SDL_GL_CreateContext(window);
 			if (!context)
 			    throw "no context";
 			SDL_GL_MakeCurrent(window, context);
+			if (verbose && SDL_GL_GetCurrentContext() == nullptr)
+			{
+				std::cout << "Setting OpenGL context failed: " << SDL_GetError() << std::endl;
+				assert(false);
+			}
 		}
+#endif
 	}
 	void GraphicContext::unsetContext()
 	{
+#ifdef HAVE_OPENGL
+		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
 		if (optionFlags & USEGPU)
 		{
 			SDL_GL_MakeCurrent(window, nullptr);
 		}
+#endif
 	}
 	bool GraphicContext::resChanged()
 	{
@@ -2061,6 +2073,7 @@ namespace GAGCore
 	}
 	void GraphicContext::resetMatrices()
 	{
+#ifdef HAVE_OPENGL
 		// https://gamedev.stackexchange.com/questions/62691/opengl-resize-problem
 		int w = getW(), h = getH();
 		glViewport(0, 0, w, h);
@@ -2068,6 +2081,7 @@ namespace GAGCore
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+#endif
 	}
 
 	bool GraphicContext::isResizing()
@@ -2116,6 +2130,8 @@ namespace GAGCore
 		prevW = w;
 		prevH = h;
 
+		Uint32 previousOptions = optionFlags;
+
 		// set flags
 		optionFlags = flags;
 		Uint32 sdlFlags = 0;
@@ -2145,6 +2161,12 @@ namespace GAGCore
 		if (!el)
 			el = EventListener::instance();
 
+		if ((flags & USEGPU) != (previousOptions & USEGPU)) // user toggled OpenGL in settings
+		{
+			SDL_DestroyWindow(window);
+			window = nullptr;
+			//doneLoading = false;
+		}
 		// if window exists, resize it
 		if (window) {
 			if (!(el && el->isResizing()) // not currently resizing
@@ -2328,7 +2350,8 @@ namespace GAGCore
 			{
 				setClipRect();
 				glClearColor(0, 0, 0, 255);
-				glClear(GL_COLOR_BUFFER_BIT);
+				glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+				unsetContext();
 			}
 			#endif
 		}
