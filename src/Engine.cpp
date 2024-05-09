@@ -366,8 +366,13 @@ int Engine::run(void)
 					automaticGameEndTick = SDL_GetTicks();
 				}
 			}
-			if(!globalContainer->runNoX && nextGuiStep == 0)
+			if (!globalContainer->runNoX && nextGuiStep == 0)
+			{
+				std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
+				EventListener::ensureContext();
 				gui.step();
+				globalContainer->gfx->unsetContext();
+			}
 	
 			if (!gui.hardPause)
 			{
@@ -517,6 +522,7 @@ int Engine::run(void)
 					globalContainer->gfx->createGLContext();
 					gui.drawAll(gui.localTeamNo);
 					globalContainer->gfx->nextFrame();
+					globalContainer->gfx->unsetContext();
 				}
 				
 				// if required, save videoshot
