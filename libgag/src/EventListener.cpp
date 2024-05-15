@@ -49,6 +49,7 @@ EventListener::EventListener(GraphicContext* gfx)
 	el = this;
 	done = false;
 	quit = true;
+	ContextSwitcher::makeCurrent();
 }
 
 //! End the event listening loop
@@ -66,9 +67,14 @@ EventListener::~EventListener()
 }
 
 //! Create an OpenGL context or set existing context as current on this thread.
-void EventListener::ensureContext()
+bool EventListener::ensureContext()
 {
-	instance()->gfx->createGLContext();
+	return instance()->gfx->createGLContext();
+}
+
+void EventListener::unsetContext()
+{
+	instance()->gfx->unsetContext();
 }
 
 //! deprecated; use addPainter/removePainter instead.
@@ -117,13 +123,13 @@ void EventListener::paint()
 	if (painters.size())
 	{
 		std::unique_lock<std::recursive_mutex> lock(renderMutex);
-		gfx->createGLContext();
+		ContextSwitcher::makeCurrent();
 		skipNextFrame = true;
 		std::multimap<const std::string, std::function<void()> >::iterator it = painters.begin();
 		it->second();
 		skipNextFrame = false;
 		gfx->nextFrame();
-		gfx->unsetContext();
+		ContextSwitcher::maybeDropContext();
 	}
 	depth--;
 }
@@ -210,6 +216,7 @@ void EventListener::run()
 				events.push(event);
 			}
 		}
+		ContextSwitcher::maybeDropContext();
 	}
 	{
 		std::unique_lock<std::mutex> lock(doneMutex);
@@ -224,6 +231,7 @@ void EventListener::run()
 int EventListener::poll(SDL_Event* e)
 {
 	std::lock_guard<std::mutex> lock(queueMutex);
+	ContextSwitcher::maybeDropContext();
 	if (events.size()) {
 		*e = events.front();
 		events.pop();
@@ -243,5 +251,53 @@ EventListener *EventListener::instance()
 bool EventListener::isRunning()
 {
 	return !quit;
+}
+
+SDL_threadID ContextSwitcher::hasContext = 0;
+SDL_threadID ContextSwitcher::wantsContext = 0;
+std::mutex ContextSwitcher::contextMutex;
+std::condition_variable ContextSwitcher::contextReleased;
+// Relinquishes the OpenGL context if the other thread wants it.
+void ContextSwitcher::maybeDropContext()
+{
+	{
+		std::lock_guard<std::mutex> lock(contextMutex);
+		if (hasContext && wantsContext && hasContext == SDL_ThreadID()
+			 && hasContext != wantsContext) {
+			std::cout << "Dropping context on thread " << hasContext << " because other thread " << wantsContext << " wants it." << std::endl;
+			EventListener::el->gfx->unsetContext();
+			hasContext = 0;
+		}
+	}
+	contextReleased.notify_one();
+}
+// Makes the OpenGL context current on this thread if it is not already current.
+void ContextSwitcher::makeCurrent()
+{
+	// Check if we already have the context
+	std::unique_lock<std::mutex> lock(contextMutex);
+	if (hasContext == SDL_ThreadID())
+	{
+		std::cout << "This thread " << hasContext << " already has the context." << std::endl;
+		return; // we already have the context
+	}
+	wantsContext = SDL_ThreadID();
+
+	// Wait for other thread to release the context
+	while (hasContext) {
+		std::cout << "Waiting for thread " << hasContext << " to release the context..." << std::endl;
+		contextReleased.wait(lock);
+	}
+
+	std::cout << "Ensuring context on thread " << SDL_ThreadID() << std::endl;
+	// Now get the context
+	if (EventListener::ensureContext())
+	{
+		hasContext = SDL_ThreadID();
+	}
+	else
+	{
+		assert(false); // ???
+	}
 }
 }

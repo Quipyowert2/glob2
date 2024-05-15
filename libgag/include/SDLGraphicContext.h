@@ -342,7 +342,7 @@ namespace GAGCore
 		virtual SDL_Surface *getOrCreateSurface(int w, int h, Uint32 flags);
 		virtual SDL_Rect getRes();
 		virtual bool resChanged();
-		virtual void createGLContext();
+		virtual bool createGLContext();
 		virtual void unsetContext();
 		static GraphicContext* instance();
 		void resetMatrices();

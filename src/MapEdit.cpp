@@ -1211,7 +1211,7 @@ bool MapEdit::save(const std::string filename, const std::string name)
 void MapEdit::draw(void)
 {
 	std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-	EventListener::ensureContext();
+	ContextSwitcher::makeCurrent();
 	drawMap(0, 0, globalContainer->gfx->getW() - 0, globalContainer->gfx->getH(), true, true);
 
 	drawMenu();

@@ -2026,7 +2026,7 @@ namespace GAGCore
 	}
 
 	std::mutex m;
-	void GraphicContext::createGLContext()
+	bool GraphicContext::createGLContext()
 	{
 #ifdef HAVE_OPENGL
 		// enable GL context
@@ -2039,12 +2039,17 @@ namespace GAGCore
 			if (!context)
 			    throw "no context";
 			SDL_GL_MakeCurrent(window, context);
-			if (verbose && SDL_GL_GetCurrentContext() == nullptr)
+			if (SDL_GL_GetCurrentContext() == nullptr)
 			{
-				std::cout << "Setting OpenGL context failed: " << SDL_GetError() << std::endl;
-				assert(false);
+				//if (verbose)
+				{
+					std::cout << "Setting OpenGL context failed: " << SDL_GetError() << std::endl;
+				}
+				return false;
+				//assert(false);
 			}
 		}
+		return true;
 #endif
 	}
 	void GraphicContext::unsetContext()
@@ -2351,7 +2356,7 @@ namespace GAGCore
 				setClipRect();
 				glClearColor(0, 0, 0, 255);
 				glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-				unsetContext();
+				ContextSwitcher::maybeDropContext();
 			}
 			#endif
 		}

@@ -30,7 +30,7 @@
 CampaignEditor::CampaignEditor(const std::string& name)
 {
 	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	EventListener::ensureContext();
+	ContextSwitcher::makeCurrent();
 	if(name!="")
 		campaign.load(name);
 	StringTable& table=*Toolkit::getStringTable();

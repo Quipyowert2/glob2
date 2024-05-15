@@ -488,7 +488,7 @@ void GlobalContainer::parseArgs(int argc, char *argv[])
 void GlobalContainer::updateLoadProgressScreen(int value)
 {
 	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	gfx->createGLContext();
+	ContextSwitcher::makeCurrent();
 	unsigned randomSeed = 1;
 	unsigned columnCount = gfx->getW() / 32;
 	unsigned limit = (value * columnCount) / 100;
@@ -509,7 +509,7 @@ void GlobalContainer::updateLoadProgressScreen(int value)
 	gfx->drawSurface((gfx->getW()-title->getW())>>1, (gfx->getH()-title->getH())>>1, title);
 	//gfx->drawFilledRect(((gfx->getW()-400)>>1), (gfx->getH()>>1)+11+180, (value)<<2, 20, 10, 50, 255, 80);
 	gfx->nextFrame();
-	gfx->createGLContext();
+	ContextSwitcher::makeCurrent();
 }
 
 EventListener* el = NULL;
@@ -524,7 +524,7 @@ void GlobalContainer::loadClient(bool runEventListener)
 			gfx->setMinRes(640, 480);
 			//gfx->setQuality((settings.optionFlags & OPTION_LOW_SPEED_GFX) != 0 ? GraphicContext::LOW_QUALITY : GraphicContext::HIGH_QUALITY);
 		
-			gfx->unsetContext();
+			ContextSwitcher::maybeDropContext();
 			el = new EventListener(gfx);
 			el->run();
 			logicThread->join();
@@ -538,7 +538,7 @@ void GlobalContainer::loadClient(bool runEventListener)
 				EventListener::startedCond.wait(lock);
 			}
 		}
-		gfx->createGLContext();
+		ContextSwitcher::makeCurrent();
 		// Next line fixes white screen during loading screen in software rendered mode.
 		gfx->getOrCreateSurface(gfx->getW(), gfx->getH(), gfx->getOptionFlags());
 		// load data required for drawing progress screen
@@ -643,7 +643,7 @@ void GlobalContainer::loadClient(bool runEventListener)
 		Style::style = new Glob2Style;
 
 		updateLoadProgressScreen(100);
-		gfx->createGLContext();
+		ContextSwitcher::makeCurrent();
 		gfx->setRes(gfx->getW(), gfx->getH());
 	}
 }

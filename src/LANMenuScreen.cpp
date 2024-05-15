@@ -38,7 +38,7 @@ using boost::shared_ptr;
 LANMenuScreen::LANMenuScreen()
 {
 	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	EventListener::ensureContext();
+	ContextSwitcher::makeCurrent();
 	addWidget(new TextButton(0,  70, 300, 40, ALIGN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", Toolkit::getStringTable()->getString("[host]"), HOST));
 	addWidget(new TextButton(0,  130, 300, 40, ALIGN_CENTERED, ALIGN_SCREEN_CENTERED,  "menu", Toolkit::getStringTable()->getString("[join a game]"), JOIN));
 	addWidget(new TextButton(0, 415, 300, 40, ALIGN_CENTERED, ALIGN_SCREEN_CENTERED,  "menu", Toolkit::getStringTable()->getString("[goto main menu]"), QUIT, 27));

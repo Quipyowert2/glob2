@@ -69,7 +69,7 @@ LoadSaveScreen::LoadSaveScreen(const char *directory, const char *extension, boo
 :OverlayScreen(globalContainer->gfx, 300, 275)
 {
 	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	EventListener::ensureContext();
+	ContextSwitcher::makeCurrent();
 	this->isLoad = isLoad;
 	if (nameToFilenameFunc)
 	{
@@ -122,7 +122,7 @@ LoadSaveScreen::LoadSaveScreen(const char *directory, const char *extension, boo
 :OverlayScreen(globalContainer->gfx, 300, 275)
 {
 	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	EventListener::ensureContext();
+	ContextSwitcher::makeCurrent();
 	this->isLoad = isLoad;
 	if (nameToFilenameFunc)
 	{

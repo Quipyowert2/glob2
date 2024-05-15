@@ -52,7 +52,8 @@ public:
 	void setPainter(std::function<void()> f);
 	void addPainter(const std::string& name, std::function<void()> f);
 	void removePainter(const std::string& name);
-	static void ensureContext();
+	static bool ensureContext();
+	static void unsetContext();
 	void paint();
 private:
 	std::function<void()> painter;
@@ -63,6 +64,22 @@ private:
 	std::atomic<int> depth;
 
 	static std::mutex queueMutex; // used when pushing/popping queue.
+	friend class ContextSwitcher;
+};
+
+// Small class to allow automatically setting/unsetting context when rendering from two different threads.
+class ContextSwitcher
+{
+private:
+	static SDL_threadID hasContext;
+	static SDL_threadID wantsContext;
+
+	static std::mutex contextMutex;
+	static std::condition_variable contextReleased;
+
+public:
+	static void maybeDropContext();
+	static void makeCurrent();
 };
 }
 #endif //__EVENTLISTENER_H

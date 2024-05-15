@@ -369,9 +369,9 @@ int Engine::run(void)
 			if (!globalContainer->runNoX && nextGuiStep == 0)
 			{
 				std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-				EventListener::ensureContext();
+				ContextSwitcher::makeCurrent();
 				gui.step();
-				globalContainer->gfx->unsetContext();
+				ContextSwitcher::maybeDropContext();
 			}
 	
 			if (!gui.hardPause)
@@ -519,10 +519,10 @@ int Engine::run(void)
 						gui.isRegistered = true;
 					}
 					std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-					globalContainer->gfx->createGLContext();
+					ContextSwitcher::makeCurrent();
 					gui.drawAll(gui.localTeamNo);
 					globalContainer->gfx->nextFrame();
-					globalContainer->gfx->unsetContext();
+					ContextSwitcher::maybeDropContext();
 				}
 				
 				// if required, save videoshot

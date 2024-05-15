@@ -483,9 +483,9 @@ void GameGUI::step(void)
 	if (gfx->resChanged()) {
 		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
 		SDL_Rect r = gfx->getRes();
-		gfx->createGLContext();
+		ContextSwitcher::makeCurrent();
 		gfx->setRes(r.w, r.h);
-		gfx->unsetContext();
+		ContextSwitcher::maybeDropContext();
 	}
 	if (wasMouseMotion)
 		processEvent(&mouseMotionEvent);
@@ -4389,7 +4389,7 @@ void GameGUI::drawInGameScrollableText(void)
 void GameGUI::drawAll(int team)
 {
 	std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-	EventListener::ensureContext();
+	ContextSwitcher::makeCurrent();
 	// draw the map
 	Uint32 drawOptions =	(drawHealthFoodBar ? Game::DRAW_HEALTH_FOOD_BAR : 0) |
 								(drawPathLines ?  Game::DRAW_PATH_LINE : 0) |
@@ -4593,7 +4593,7 @@ void GameGUI::executeOrder(boost::shared_ptr<Order> order)
 		case ORDER_PLAYER_QUIT_GAME :
 		{
 			std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-			EventListener::ensureContext();
+			ContextSwitcher::makeCurrent();
 			int qp=order->sender;
 			if (qp==localPlayer)
 				isRunning=false;
