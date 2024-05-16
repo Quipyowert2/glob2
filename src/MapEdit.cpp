@@ -1210,8 +1210,8 @@ bool MapEdit::save(const std::string filename, const std::string name)
 
 void MapEdit::draw(void)
 {
-	std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	drawMap(0, 0, globalContainer->gfx->getW() - 0, globalContainer->gfx->getH(), true, true);
 
 	drawMenu();
@@ -1297,12 +1297,12 @@ int MapEdit::run(void)
 		{
  			processEvent(event);
 		}
-
+		/*
 		GraphicContext *gfx = GraphicContext::instance();
 		if (gfx->resChanged()) {
 			SDL_Rect r = gfx->getRes();
 			gfx->setRes(r.w, r.h);
-		}
+		}*/
 
 		// While processing events the user could've tried to load a map that failed.
 		// Then we can't go through drawing everything because that would segfault.

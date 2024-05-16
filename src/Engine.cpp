@@ -368,10 +368,7 @@ int Engine::run(void)
 			}
 			if (!globalContainer->runNoX && nextGuiStep == 0)
 			{
-				std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-				ContextSwitcher::makeCurrent();
 				gui.step();
-				ContextSwitcher::maybeDropContext();
 			}
 	
 			if (!gui.hardPause)
@@ -514,12 +511,12 @@ int Engine::run(void)
 					// we draw
 					if (!gui.isRegistered)
 					{
-						std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
+						std::unique_lock<std::mutex> lock(EventListener::renderMutex);
 						EventListener::instance()->addPainter("GameGUI", std::bind(&GameGUI::drawAll, &gui, gui.localTeamNo));
 						gui.isRegistered = true;
 					}
-					std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-					ContextSwitcher::makeCurrent();
+					std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+					ContextSwitcher::makeCurrent(lock);
 					gui.drawAll(gui.localTeamNo);
 					globalContainer->gfx->nextFrame();
 					ContextSwitcher::maybeDropContext();

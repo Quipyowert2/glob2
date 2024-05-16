@@ -34,6 +34,7 @@
 namespace GAGCore {
 extern std::queue<SDL_Event> events;
 extern bool skipNextFrame;
+extern bool callSDLResize;
 class EventListener {
 public:
 	EventListener(GraphicContext* gfx);
@@ -48,7 +49,7 @@ public:
 	static std::condition_variable startedCond;
 	static std::mutex doneMutex;
 	static std::condition_variable doneCond;
-	static std::recursive_mutex renderMutex;
+	static std::mutex renderMutex;
 	void setPainter(std::function<void()> f);
 	void addPainter(const std::string& name, std::function<void()> f);
 	void removePainter(const std::string& name);
@@ -79,7 +80,7 @@ private:
 
 public:
 	static void maybeDropContext();
-	static void makeCurrent();
+	static void makeCurrent(std::unique_lock<std::mutex>& outerLock);
 };
 }
 #endif //__EVENTLISTENER_H

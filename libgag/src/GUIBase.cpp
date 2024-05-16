@@ -477,8 +477,8 @@ namespace GAGGUI
 						if (event.window.event == SDL_WINDOWEVENT_RESIZED)
 						{
 							// FIXME: window resize is broken
-							std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-							ContextSwitcher::makeCurrent();
+							std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+							ContextSwitcher::makeCurrent(lock);
 							gfx->setRes(event.window.data1, event.window.data2);
 							onAction(NULL, SCREEN_RESIZED, gfx->getW(), gfx->getH());
 							ContextSwitcher::maybeDropContext();
@@ -520,22 +520,27 @@ namespace GAGGUI
 					break;
 				}
 			}
-			GraphicContext* gfx = GraphicContext::instance();
+			/*GraphicContext* gfx = GraphicContext::instance();
 			if (gfx->resChanged()) {
 				SDL_Rect r = gfx->getRes();
-				std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-				ContextSwitcher::makeCurrent();
+				std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+				ContextSwitcher::makeCurrent(lock);
 				gfx->setRes(r.w, r.h);
 				onAction(NULL, SCREEN_RESIZED, gfx->getW(), gfx->getH());
 				ContextSwitcher::maybeDropContext();
-			}
+			}*/
 			if (hadLastMouseMotion)
 				dispatchEvents(&lastMouseMotion);
 			if (wasWindowEvent)
 				dispatchEvents(&windowEvent);
 				
 			// draw
-			dispatchPaint();
+			ContextSwitcher::maybeDropContext();
+			{
+				std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+				ContextSwitcher::makeCurrent(lock);
+				dispatchPaint();
+			}
 			ContextSwitcher::maybeDropContext();
 	
 			// wait timer
@@ -674,8 +679,6 @@ namespace GAGGUI
 	
 	void Screen::dispatchInit(void)
 	{
-		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-		ContextSwitcher::makeCurrent();
 		animationFrame = 0;
 		for (std::set<Widget *>::iterator it=widgets.begin(); it!=widgets.end(); ++it)
 		{
@@ -686,8 +689,6 @@ namespace GAGGUI
 	void Screen::dispatchPaint(void)
 	{
 		assert(gfx);
-		std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-		ContextSwitcher::makeCurrent();
 		gfx->setClipRect();
 		paint();
 		for (std::set<Widget *>::iterator it=widgets.begin(); it!=widgets.end(); ++it)

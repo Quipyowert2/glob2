@@ -25,8 +25,8 @@
 
 CampaignMenuScreen::CampaignMenuScreen(const std::string& name)
 {
-	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	campaign.load(name);
 	title = new Text(0, 18, ALIGN_FILL, ALIGN_SCREEN_CENTERED, "menu", campaign.getName());
 	addWidget(title);
@@ -96,8 +96,8 @@ void CampaignMenuScreen::onAction(Widget *source, Action action, int par1, int p
 	}
 	else if (action == LIST_ELEMENT_SELECTED)
 	{
-		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-		ContextSwitcher::makeCurrent();
+		std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+		ContextSwitcher::makeCurrent(lock);
 		std::string mapFileName = campaign.getMap(availableMissions->getSelectionIndex()).getMapFileName();
 		mapPreview->setMapThumbnail(mapFileName.c_str());
 		description->setText(Toolkit::getStringTable()->getString(campaign.getMap(availableMissions->getSelectionIndex()).getDescription()));

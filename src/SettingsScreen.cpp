@@ -43,8 +43,8 @@
 SettingsScreen::SettingsScreen()
  : Glob2TabScreen(false, true), unitRatioGroupNumbers(), mapeditKeyboardManager(MapEditShortcuts), guiKeyboardManager(GameGUIShortcuts)
 {
-	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	old_settings=globalContainer->settings;
 	
 	generalGroup = addGroup(Toolkit::getStringTable()->getString("[general settings]"));
@@ -568,8 +568,8 @@ void SettingsScreen::onAction(Widget *source, Action action, int par1, int par2)
 		}
 		else if (source==usegpu)
 		{
-			std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-			ContextSwitcher::makeCurrent();
+			std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+			ContextSwitcher::makeCurrent(lock);
 			if (usegpu->getState())
 			{
 				globalContainer->settings.screenFlags |= GraphicContext::USEGPU;

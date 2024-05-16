@@ -45,8 +45,8 @@ using boost::static_pointer_cast;
 YOGLoginScreen::YOGLoginScreen(boost::shared_ptr<YOGClient> client)
 	: client(client)
 {
-	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	addWidget(new TextButton(440, 420, 180, 40, ALIGN_SCREEN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", Toolkit::getStringTable()->getString("[Cancel]"), CANCEL, 27));
 	addWidget(new TextButton(440, 360, 180, 40, ALIGN_SCREEN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", Toolkit::getStringTable()->getString("[login]"), LOGIN, 13));
 	addWidget(new TextButton(440, 300, 180, 40, ALIGN_SCREEN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", Toolkit::getStringTable()->getString("[Register]"), REGISTER, 13));

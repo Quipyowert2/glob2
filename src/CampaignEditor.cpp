@@ -29,8 +29,8 @@
 
 CampaignEditor::CampaignEditor(const std::string& name)
 {
-	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	if(name!="")
 		campaign.load(name);
 	StringTable& table=*Toolkit::getStringTable();

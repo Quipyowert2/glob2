@@ -339,8 +339,8 @@ struct MoreScore
 
 EndGameScreen::EndGameScreen(GameGUI *gui)
 {
-	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	// We're no longer replaying a game
 	globalContainer->replaying = false;
 
@@ -556,8 +556,8 @@ std::string replayFilenameToName(const std::string& fullfilename)
 
 void EndGameScreen::saveReplay(const char *dir, const char *ext)
 {
-	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	// create dialog box
 	LoadSaveScreen *loadSaveScreen=new LoadSaveScreen(dir, ext, false, std::string(Toolkit::getStringTable()->getString("[save replay]")), "", replayFilenameToName, glob2NameToFilename);
 	loadSaveScreen->dispatchPaint();

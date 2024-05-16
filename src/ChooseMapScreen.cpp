@@ -34,8 +34,8 @@
 
 ChooseMapScreen::ChooseMapScreen(const char *directory, const char *extension, bool recurse, const char* alternateDirectory, const char* alternateExtension, const bool alternateRecurse)
 {
-	std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 	ok = new TextButton(440, 360, 180, 40, ALIGN_SCREEN_CENTERED, ALIGN_SCREEN_CENTERED, "menu", Toolkit::getStringTable()->getString("[ok]"), OK, 13);
 	addWidget(ok);
 	
@@ -151,8 +151,8 @@ void ChooseMapScreen::onAction(Widget *source, Action action, int par1, int par2
 					mapHeader.setMapName(glob2FilenameToName(mapFileName));
 					if (validMapSelected)
 					{
-						std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-						ContextSwitcher::makeCurrent();
+						std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+						ContextSwitcher::makeCurrent(lock);
 						updateMapInformation();
 
 						time_t mtime = Toolkit::getFileManager()->mtime(mapFileName);

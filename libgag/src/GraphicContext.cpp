@@ -349,7 +349,6 @@ namespace GAGCore
 		#ifdef HAVE_OPENGL
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
-			std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
 			assert(SDL_GL_GetCurrentContext());
 			//EventListener::ensureContext();
 			glState.setTexture(texture);
@@ -2033,7 +2032,6 @@ namespace GAGCore
 		if (optionFlags & USEGPU)
 		{
 			std::lock_guard<std::mutex> l(m);
-			std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
 			if (!context)
 			    context = SDL_GL_CreateContext(window);
 			if (!context)
@@ -2055,7 +2053,7 @@ namespace GAGCore
 	void GraphicContext::unsetContext()
 	{
 #ifdef HAVE_OPENGL
-		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
+		std::lock_guard<std::mutex> lock(m);
 		if (optionFlags & USEGPU)
 		{
 			SDL_GL_MakeCurrent(window, nullptr);
@@ -2099,7 +2097,6 @@ namespace GAGCore
 	}
 
 	SDL_Surface* GraphicContext::getOrCreateSurface(int w, int h, Uint32 flags) {
-		std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
 		if (flags & USEGPU)
 		{
 			if (sdlsurface)
@@ -2177,7 +2174,10 @@ namespace GAGCore
 			if (!(el && el->isResizing()) // not currently resizing
 				|| (!isLoading && !doneLoading)) // not in loading screen or just finished loading
 			{
-				SDL_SetWindowSize(window, w, h);
+				if (callSDLResize)
+				{
+					SDL_SetWindowSize(window, w, h);
+				}
 				SDL_SetWindowResizable(window, SDL_TRUE);
 				doneLoading = true;
 			}

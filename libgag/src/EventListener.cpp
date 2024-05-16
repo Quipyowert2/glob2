@@ -35,8 +35,9 @@ std::mutex EventListener::startMutex;
 std::condition_variable EventListener::startedCond;
 std::mutex EventListener::doneMutex;
 std::condition_variable EventListener::doneCond;
-std::recursive_mutex EventListener::renderMutex;
+std::mutex EventListener::renderMutex;
 bool skipNextFrame = false;
+bool callSDLResize = true;
 
 #define SIZE_MOVE_TIMER_ID 1
 
@@ -49,7 +50,8 @@ EventListener::EventListener(GraphicContext* gfx)
 	el = this;
 	done = false;
 	quit = true;
-	ContextSwitcher::makeCurrent();
+	std::unique_lock<std::mutex> lock(renderMutex);
+	ContextSwitcher::makeCurrent(lock);
 }
 
 //! End the event listening loop
@@ -80,7 +82,7 @@ void EventListener::unsetContext()
 //! deprecated; use addPainter/removePainter instead.
 void EventListener::setPainter(std::function<void()> f)
 {
-	std::unique_lock<std::recursive_mutex> lock(renderMutex);
+	std::unique_lock<std::mutex> lock(queueMutex);
 	painter = f;
 }
 
@@ -90,7 +92,7 @@ void EventListener::setPainter(std::function<void()> f)
  */
 void EventListener::addPainter(const std::string& name, std::function<void()> f)
 {
-	std::unique_lock<std::recursive_mutex> lock(renderMutex);
+	std::lock_guard<std::mutex> lock(queueMutex);
 	painters.insert(std::pair<const std::string, std::function<void()> >(name, f));
 }
 
@@ -101,7 +103,7 @@ void EventListener::removePainter(const std::string& name)
 {
 	if (painters.empty())
 		assert("Tried to remove a painter when painters map is empty.");
-	std::unique_lock<std::recursive_mutex> lock(renderMutex);
+	std::unique_lock<std::mutex> lock(renderMutex);
 	for (std::multimap<const std::string, std::function<void()> >::reverse_iterator it = painters.rbegin(); it != painters.rend(); ++it)
 	{
 		if (it->first == name)
@@ -122,8 +124,16 @@ void EventListener::paint()
 		return;
 	if (painters.size())
 	{
-		std::unique_lock<std::recursive_mutex> lock(renderMutex);
-		ContextSwitcher::makeCurrent();
+		ContextSwitcher::maybeDropContext();
+		std::unique_lock<std::mutex> lock(renderMutex);
+		ContextSwitcher::makeCurrent(lock);
+		if (gfx->resChanged()) {
+			SDL_Rect r = gfx->getRes();
+			std::cout << "Resolution changed to " << r.w << "x" << r.h << std::endl;
+			callSDLResize = false;
+			gfx->setRes(r.w, r.h);
+			callSDLResize = true;
+		}
 		skipNextFrame = true;
 		std::multimap<const std::string, std::function<void()> >::iterator it = painters.begin();
 		it->second();
@@ -262,38 +272,62 @@ void ContextSwitcher::maybeDropContext()
 {
 	{
 		std::lock_guard<std::mutex> lock(contextMutex);
+		//std::cout << "hasContext=" << hasContext << " wantsContext=" << wantsContext << " this thread=" << SDL_ThreadID() << std::endl;
 		if (hasContext && wantsContext && hasContext == SDL_ThreadID()
 			 && hasContext != wantsContext) {
-			std::cout << "Dropping context on thread " << hasContext << " because other thread " << wantsContext << " wants it." << std::endl;
+			//std::cout << "Dropping context on thread " << hasContext << " because other thread " << wantsContext << " wants it." << std::endl;
 			EventListener::el->gfx->unsetContext();
 			hasContext = 0;
 		}
 	}
 	contextReleased.notify_one();
 }
+template <typename T> class ScopedUnlock
+{
+public:
+	ScopedUnlock(T& lock)
+		:lock(lock)
+	{
+		//std::cout << "Unlocking lock " << &lock << std::endl;
+		lock.unlock();
+	}
+	~ScopedUnlock()
+	{
+		//std::cout << "Locking lock " << &lock << std::endl;
+		lock.lock();
+	}
+
+private:
+	T& lock;
+};
 // Makes the OpenGL context current on this thread if it is not already current.
-void ContextSwitcher::makeCurrent()
+void ContextSwitcher::makeCurrent(std::unique_lock<std::mutex>& outerLock)
 {
 	// Check if we already have the context
+	ScopedUnlock<std::unique_lock<std::mutex>> unlock(outerLock);
 	std::unique_lock<std::mutex> lock(contextMutex);
 	if (hasContext == SDL_ThreadID())
 	{
-		std::cout << "This thread " << hasContext << " already has the context." << std::endl;
+		//std::cout << "This thread " << hasContext << " already has the context." << std::endl;
 		return; // we already have the context
 	}
-	wantsContext = SDL_ThreadID();
 
 	// Wait for other thread to release the context
 	while (hasContext) {
-		std::cout << "Waiting for thread " << hasContext << " to release the context..." << std::endl;
+		//std::cout << "Thread " << SDL_ThreadID() << " is waiting for thread " << hasContext << " to release the context..." << std::endl;
+		wantsContext = SDL_ThreadID();
 		contextReleased.wait(lock);
 	}
 
-	std::cout << "Ensuring context on thread " << SDL_ThreadID() << std::endl;
+	//std::cout << "Ensuring context on thread " << SDL_ThreadID() << std::endl;
 	// Now get the context
 	if (EventListener::ensureContext())
 	{
 		hasContext = SDL_ThreadID();
+		if (wantsContext == hasContext)
+		{
+			wantsContext = 0;
+		}
 	}
 	else
 	{

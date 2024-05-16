@@ -473,25 +473,34 @@ void GameGUI::step(void)
 		{
 			windowEvent=event;
 			wasWindowEvent=true;
+			/*
+			GraphicContext* gfx = GraphicContext::instance();
+			if (gfx->resChanged()) {
+				std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+				SDL_Rect r = gfx->getRes();
+				ContextSwitcher::makeCurrent(lock);
+				gfx->setRes(r.w, r.h);
+				ContextSwitcher::maybeDropContext();
+			}*/
 		}
 		else
 		{
 			processEvent(&event);
 		}
 	}
-	GraphicContext* gfx = GraphicContext::instance();
-	if (gfx->resChanged()) {
-		std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-		SDL_Rect r = gfx->getRes();
-		ContextSwitcher::makeCurrent();
-		gfx->setRes(r.w, r.h);
-		ContextSwitcher::maybeDropContext();
-	}
 	if (wasMouseMotion)
 		processEvent(&mouseMotionEvent);
 	if (wasWindowEvent)
 		processEvent(&windowEvent);
-
+	/*
+	GraphicContext* gfx = GraphicContext::instance();
+	if (gfx->resChanged()) {
+		std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+		SDL_Rect r = gfx->getRes();
+		ContextSwitcher::makeCurrent(lock);
+		gfx->setRes(r.w, r.h);
+		ContextSwitcher::maybeDropContext();
+	}*/
 	flushScrollWheelOrders();
 
 	int oldViewportX = viewportX;
@@ -4388,8 +4397,6 @@ void GameGUI::drawInGameScrollableText(void)
 
 void GameGUI::drawAll(int team)
 {
-	std::unique_lock<std::recursive_mutex> lock(EventListener::renderMutex);
-	ContextSwitcher::makeCurrent();
 	// draw the map
 	Uint32 drawOptions =	(drawHealthFoodBar ? Game::DRAW_HEALTH_FOOD_BAR : 0) |
 								(drawPathLines ?  Game::DRAW_PATH_LINE : 0) |
@@ -4592,8 +4599,8 @@ void GameGUI::executeOrder(boost::shared_ptr<Order> order)
 		break;
 		case ORDER_PLAYER_QUIT_GAME :
 		{
-			std::lock_guard<std::recursive_mutex> lock(EventListener::renderMutex);
-			ContextSwitcher::makeCurrent();
+			std::unique_lock<std::mutex> lock(EventListener::renderMutex);
+			ContextSwitcher::makeCurrent(lock);
 			int qp=order->sender;
 			if (qp==localPlayer)
 				isRunning=false;
