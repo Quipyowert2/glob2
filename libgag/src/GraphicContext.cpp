@@ -32,6 +32,7 @@
 #include <valarray>
 #include <cstdlib>
 #include <memory>
+#include <chrono>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -2154,6 +2155,28 @@ namespace GAGCore
 		}
 	}
 
+	/* Frames per second. CalcAverageTick function is by KPexEA https://stackoverflow.com/a/87732 */
+	#define MAXSAMPLES 100
+	int tickindex = 0;
+	int ticksum = 0;
+	int ticklist[MAXSAMPLES];
+
+	/* need to zero out the ticklist array before starting */
+	/* average will ramp up until the buffer is full */
+	/* returns average ticks per frame over the MAXSAMPLES last frames */
+
+	double CalcAverageTick(int newtick)
+	{
+		ticksum -= ticklist[tickindex];  /* subtract value falling off */
+		ticksum += newtick;              /* add new value */
+		ticklist[tickindex] = newtick;   /* save new value so it can be subtracted later */
+		if (++tickindex == MAXSAMPLES)    /* inc buffer index */
+			tickindex = 0;
+
+		/* return average */
+		return((double)ticksum / MAXSAMPLES);
+	}
+
 	void GraphicContext::nextFrame(void)
 	{
 		DrawableSurface::nextFrame();
@@ -2167,6 +2190,22 @@ namespace GAGCore
 				setClipRect();
 				cursorManager.draw(this, mx, my);
 			}
+
+			//static Sint64 lastTick = 0;
+			//Uint64 now = SDL_GetTicks64();
+			//double averageTick = CalcAverageTick(SDL_GetTicks64() - lastTick);
+			using namespace std::chrono;
+			static steady_clock::time_point lastTick;
+			steady_clock::time_point now = steady_clock::now();
+			milliseconds elapsed = duration_cast<milliseconds>(now - lastTick);
+			double averageTick = CalcAverageTick(elapsed.count());
+			static int counter = 0;
+			if (counter++ == 20)
+			{
+				std::cout << "FPS: " << 1000 / averageTick << " frame time: " << elapsed.count() << std::endl;
+				counter = 0;
+			}
+			lastTick = steady_clock::now();
 
 			#ifdef HAVE_OPENGL
 			if (optionFlags & GraphicContext::USEGPU)
