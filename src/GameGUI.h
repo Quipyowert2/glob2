@@ -365,6 +365,8 @@ private:
 	std::string previousSGSLText;
 	//! USL script text
 	std::string scriptText;
+	// Cache to speed up drawOverlayInfos
+	std::vector<std::string> tutorialHint;
 	//! whether script text was updated in last step, required because of our translation override common text mechanism
 	bool scriptTextUpdated;
 

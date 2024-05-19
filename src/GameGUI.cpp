@@ -4220,12 +4220,15 @@ void GameGUI::drawOverlayInfos(void)
 		// show script text
 		if (game.sgslScript.isTextShown)
 		{
-			std::vector<std::string> lines;
-			setMultiLine(game.sgslScript.textShown, &lines);
-			globalContainer->gfx->drawFilledRect(24, ymesg-8, globalContainer->gfx->getW()-RIGHT_MENU_WIDTH-64+16, lines.size()*20+16, 0,0,0,128);
-			for (unsigned i=0; i<lines.size(); i++)
+			if (game.sgslScript.textShown != previousSGSLText)
 			{
-				globalContainer->gfx->drawString(32, ymesg+yinc, globalContainer->standardFont, lines[i].c_str());
+				tutorialHint.clear();
+				setMultiLine(game.sgslScript.textShown, &tutorialHint);
+			}
+			globalContainer->gfx->drawFilledRect(24, ymesg-8, globalContainer->gfx->getW()-RIGHT_MENU_WIDTH-64+16, tutorialHint.size()*20+16, 0,0,0,128);
+			for (unsigned i=0; i<tutorialHint.size(); i++)
+			{
+				globalContainer->gfx->drawString(32, ymesg+yinc, globalContainer->standardFont, tutorialHint[i]);
 				yinc += 20;
 			}
 		
