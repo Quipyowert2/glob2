@@ -524,8 +524,8 @@ namespace GAGGUI
 			// wait timer
 			frameWaitTime=SDL_GetTicks()-frameStartTime;
 			frameWaitTime=stepLength-frameWaitTime;
-			if (frameWaitTime>0)
-				SDL_Delay(frameWaitTime);
+			//if (frameWaitTime>0)
+			//	SDL_Delay(frameWaitTime);
 		}
 		
 		// destroy screen event

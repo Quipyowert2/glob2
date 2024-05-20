@@ -532,7 +532,8 @@ int Engine::run(void)
 
 				//Any inconsistancies in the delays will be smoothed throughout the following frames,
 				Sint32 delay = std::max(0, needToBeTime - currentTime);
-				SDL_Delay(delay);
+				// commented out for profiling
+				//SDL_Delay(delay);
 				
 				// we set CPU stats
 //				net->setLeftTicks(computationAvailableTicks);//We may have to tell others IP players to wait for our slow computer.
