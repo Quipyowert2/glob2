@@ -1970,6 +1970,8 @@ inline void Game::drawMapTerrain(int left, int top, int right, int bot, int view
 	Uint32 visibleTeams = teams[localTeam]->me;
 	if (globalContainer->replaying) visibleTeams = globalContainer->replayVisibleTeams;
 
+	Sprite* sprite;
+
 	// we draw the terrains, eventually with debug rects:
 	for (int y=top; y<=bot; y++)
 		for (int x=left; x<=right; x++)
@@ -1984,7 +1986,6 @@ inline void Game::drawMapTerrain(int left, int top, int right, int bot, int view
 			{
 				// draw terrain
 				int id=map.getTerrain(x+viewportX, y+viewportY);
-				Sprite *sprite;
 				if (id<272)
 				{
 					sprite=globalContainer->terrain;
@@ -1998,6 +1999,7 @@ inline void Game::drawMapTerrain(int left, int top, int right, int bot, int view
 				if ((id < 256) || (id >= 256+16))
 					globalContainer->gfx->drawSprite(x<<5, y<<5, sprite, id);
 			}
+	globalContainer->gfx->finishDrawingSprite(sprite, 255);
 }
 
 inline void Game::drawMapRessources(int left, int top, int right, int bot, int viewportX, int viewportY, int localTeam, Uint32 drawOptions)
