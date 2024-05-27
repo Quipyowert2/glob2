@@ -438,7 +438,7 @@ namespace GAGCore
 		unsigned int vbo;
 		unsigned int texCoordBuffer;
 #endif
-		DrawableSurface *atlas;
+		DrawableSurface *atlas = nullptr;
 		Color actColor;
 	
 		friend class DrawableSurface;
