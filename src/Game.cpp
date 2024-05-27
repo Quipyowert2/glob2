@@ -2226,6 +2226,7 @@ inline void Game::drawMapBuilding(int x, int y, int gid, int viewportX, int view
 
 	// draw building
 	globalContainer->gfx->drawSprite(x+dx, y+dy, buildingSprite, imgid);
+	globalContainer->gfx->finishDrawingSprite(buildingSprite, 255);
 
 	if ((drawOptions & DRAW_BUILDING_RECT) != 0)
 	{
