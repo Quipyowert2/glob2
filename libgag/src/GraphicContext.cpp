@@ -25,6 +25,12 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <epoxy/gl.h>
+#ifdef _MSC_VER
+#include <epoxy/wgl.h>
+#else
+#include <epoxy/glx.h>
+#endif
 #include "SDL_ttf.h"
 #include <SDL_image.h>
 #include <math.h>
