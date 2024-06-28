@@ -86,8 +86,10 @@ namespace GAGCore
 			i++;
 		}
 		// TODO: How to cache rotated images?
-		if (!images.empty() && rotated.empty())
+		if (std::any_of(images.begin(), images.end(), [](DrawableSurface *s) {return s != nullptr; }))
+		{
 			createTextureAtlas();
+		}
 		
 		return getFrameCount() > 0;
 	}
@@ -114,8 +116,8 @@ namespace GAGCore
 		}
 		int tileWidth = images[0]->getW();
 		int tileHeight = images[0]->getH();
-		int sheetWidth = tileWidth * (sqrt(numImages) + 1);
-		int sheetHeight = tileHeight * (sqrt(numImages) + 1);
+		int sheetWidth = tileWidth * (static_cast<int>(sqrt(numImages)) + 1);
+		int sheetHeight = tileHeight * (static_cast<int>(sqrt(numImages)) + 1);
 		atlas = new DrawableSurface(sheetWidth, sheetHeight);
 		int x = 0, y = 0;
 		for (auto image: images)
