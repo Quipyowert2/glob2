@@ -441,7 +441,7 @@ namespace GAGCore
 		std::vector <float> texCoords;
 		unsigned int vbo;
 		unsigned int texCoordBuffer;
-		DrawableSurface *atlas = nullptr;
+		std::unique_ptr<DrawableSurface> atlas = nullptr;
 #endif
 		Color actColor;
 	
