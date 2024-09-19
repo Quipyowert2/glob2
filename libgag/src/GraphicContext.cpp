@@ -2006,6 +2006,22 @@ namespace GAGCore
 			fprintf(stderr, "Toolkit : Graphic Context destroyed\n");
 	}
 
+	bool GraphicContext::resChanged()
+	{
+		int w, h;
+		SDL_GetWindowSize(window, &w, &h);
+		return prevW != w || prevH != h;
+	}
+
+	SDL_Rect GraphicContext::getRes()
+	{
+		int w, h;
+		SDL_Rect r;
+		SDL_GetWindowSize(window, &w, &h);
+		r = { 0, 0, w, h };
+		return r;
+	}
+
 	bool GraphicContext::setRes(int w, int h, Uint32 flags)
 	{
 		// check dimension
@@ -2021,6 +2037,9 @@ namespace GAGCore
 				fprintf(stderr, "Toolkit : Screen height %d is too small, set to min %d\n", h, minH);
 			h = minH;
 		}
+
+		prevW = w;
+		prevH = h;
 
 		// set flags
 		optionFlags = flags;
