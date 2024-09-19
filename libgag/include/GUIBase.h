@@ -316,6 +316,8 @@ namespace GAGGUI
 		Screen();
 	
 		virtual ~Screen();
+
+		friend int dispatchPaintWrapper(void* that, SDL_Event* event);
 	
 		//! Method called for each timer's tick
 		virtual void onTimer(Uint32 tick) { }

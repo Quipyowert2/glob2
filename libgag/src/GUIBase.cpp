@@ -420,6 +420,22 @@ namespace GAGGUI
 			delete (*it);
 		}
 	}
+
+	int dispatchPaintWrapper(void* that, SDL_Event* event) {
+		if (that && event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_EXPOSED) {
+			Screen* This = reinterpret_cast<Screen*>(that);
+			GraphicContext* gfxCasted = dynamic_cast<GraphicContext*>(This->gfx);
+			if (gfxCasted && gfxCasted->resChanged())
+			{
+				SDL_Rect r = gfxCasted->getRes();
+				This->gfx->setRes(r.w, r.h);
+				This->onAction(NULL, SCREEN_RESIZED, This->gfx->getW(), This->gfx->getH());
+				This->dispatchPaint();
+			}
+		}
+
+		return 1;
+	}
 	
 	int Screen::execute(DrawableSurface *gfx, int stepLength)
 	{
@@ -433,6 +449,8 @@ namespace GAGGUI
 		
 		// create screen event
 		onAction(NULL, SCREEN_CREATED, 0, 0);
+
+		SDL_AddEventWatch(dispatchPaintWrapper, this);
 		
 		// draw screen
 		dispatchPaint();
@@ -530,6 +548,8 @@ namespace GAGGUI
 				SDL_Delay(frameWaitTime);
 		}
 		
+		SDL_DelEventWatch(dispatchPaintWrapper, this);
+
 		// destroy screen event
 		onAction(NULL, SCREEN_DESTROYED, 0, 0);
 	
