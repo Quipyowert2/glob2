@@ -4374,6 +4374,23 @@ void GameGUI::drawInGameScrollableText(void)
 	globalContainer->gfx->drawSurface(scrollableText->decX, scrollableText->decY, scrollableText->getSurface());
 }
 
+int drawAllWrapper(void* that, SDL_Event* event)
+{
+	if (that && event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_EXPOSED)
+	{
+		GameGUI* This = reinterpret_cast<GameGUI*>(that);
+		if (globalContainer->gfx->resChanged())
+		{
+			SDL_Rect r = globalContainer->gfx->getRes();
+			globalContainer->gfx->setRes(r.w, r.h);
+			This->drawAll(This->localTeamNo);
+			globalContainer->gfx->nextFrame();
+		}
+	}
+
+	return 1;
+}
+
 void GameGUI::drawAll(int team)
 {
 	// draw the map

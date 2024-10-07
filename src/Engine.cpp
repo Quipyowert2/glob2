@@ -252,7 +252,9 @@ bool Engine::haveMap(const MapHeader& mapHeader)
 	return true;
 }
 
-
+#if defined(_WIN32) || defined(__MINGW32__) || defined(__MINGW64__)
+#define WINDOWS_OR_MINGW 1
+#endif
 
 int Engine::run(void)
 {
@@ -298,6 +300,9 @@ int Engine::run(void)
 		globalContainer->mix->setNextTrack(2, true);
 		globalContainer->gfx->cursorManager.setDrawColor(gui.getLocalTeam()->color);
 	}
+#ifdef WINDOWS_OR_MINGW
+	SDL_AddEventWatch(&drawAllWrapper, &gui);
+#endif
 	
 	while (doRunOnceAgain)
 	{
@@ -559,6 +564,7 @@ int Engine::run(void)
 			}
 		}
 
+
 		if(globalContainer->automaticEndingGame)
 		{
 			int time = gui.game.stepCounter;
@@ -623,6 +629,9 @@ int Engine::run(void)
 			gui.toLoadGameFileName[0]=0; // Avoid the communication system between GameGUI and Engine to loop.
 		}
 	}
+#ifdef WINDOWS_OR_MINGW
+	SDL_DelEventWatch(&drawAllWrapper, &gui);
+#endif
 	
 	if(!globalContainer->runNoX)
 	{

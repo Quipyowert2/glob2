@@ -494,5 +494,7 @@ private:
 	void moveParticles(int oldViewportX, int viewportX, int oldViewportY, int viewportY);
 };
 
+int drawAllWrapper(void* that, SDL_Event* event);
+
 #endif
 
