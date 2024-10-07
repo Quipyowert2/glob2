@@ -301,7 +301,13 @@ int Engine::run(void)
 		globalContainer->gfx->cursorManager.setDrawColor(gui.getLocalTeam()->color);
 	}
 #ifdef WINDOWS_OR_MINGW
-	SDL_AddEventWatch(&drawAllWrapper, &gui);
+	SDL_EventFilter previousWatch;
+	void* previousWatchClass;
+	if (!SDL_GetEventFilter(&previousWatch, &previousWatchClass))
+	{
+		std::cerr << "Engine::run(): get event filter failed with error " << SDL_GetError() << std::endl;
+	}
+	SDL_SetEventFilter(&drawAllWrapper, &gui);
 #endif
 	
 	while (doRunOnceAgain)
@@ -630,7 +636,7 @@ int Engine::run(void)
 		}
 	}
 #ifdef WINDOWS_OR_MINGW
-	SDL_DelEventWatch(&drawAllWrapper, &gui);
+	SDL_SetEventFilter(previousWatch, previousWatchClass);
 #endif
 	
 	if(!globalContainer->runNoX)

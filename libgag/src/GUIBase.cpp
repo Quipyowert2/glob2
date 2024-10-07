@@ -436,7 +436,10 @@ namespace GAGGUI
 
 		return 1;
 	}
-	
+
+#if defined(_WIN32) || defined(__MINGW32__) || defined(__MINGW64__)
+#define WINDOWS_OR_MINGW 1
+#endif
 	int Screen::execute(DrawableSurface *gfx, int stepLength)
 	{
 		Uint64 frameStartTime;
@@ -450,7 +453,15 @@ namespace GAGGUI
 		// create screen event
 		onAction(NULL, SCREEN_CREATED, 0, 0);
 
-		SDL_AddEventWatch(dispatchPaintWrapper, this);
+#ifdef WINDOWS_OR_MINGW
+		SDL_EventFilter previousWatch;
+		void* previousWatchClass;
+		if (!SDL_GetEventFilter(&previousWatch, &previousWatchClass))
+		{
+			std::cerr << "Engine::run(): get event filter failed with error " << SDL_GetError() << std::endl;
+		}
+		SDL_SetEventFilter(dispatchPaintWrapper, this);
+#endif
 		
 		// draw screen
 		dispatchPaint();
@@ -540,15 +551,16 @@ namespace GAGGUI
 				
 			// draw
 			dispatchPaint();
-	
+
 			// wait timer
 			frameWaitTime=static_cast<Sint64>(SDL_GetTicks64())-static_cast<Sint64>(frameStartTime);
 			frameWaitTime=stepLength-frameWaitTime;
 			if (frameWaitTime>0)
 				SDL_Delay(frameWaitTime);
 		}
-		
-		SDL_DelEventWatch(dispatchPaintWrapper, this);
+#ifdef WINDOWS_OR_MINGW
+		SDL_SetEventFilter(previousWatch, previousWatchClass);
+#endif
 
 		// destroy screen event
 		onAction(NULL, SCREEN_DESTROYED, 0, 0);
