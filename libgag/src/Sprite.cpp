@@ -156,7 +156,6 @@ namespace GAGCore
 		for (auto image : images)
 		{
 			image->texture = atlas->texture;
-			image->usingAtlas = true;
 			image->sprite = this;
 			image->setRes(sheetWidth, sheetHeight);
 		}
