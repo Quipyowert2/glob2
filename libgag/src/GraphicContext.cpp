@@ -310,7 +310,7 @@ namespace GAGCore
 	void DrawableSurface::allocateTexture(void)
 	{
 		#ifdef HAVE_OPENGL
-		if (usingAtlas)
+		if (sprite)
 			return;
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
@@ -354,7 +354,7 @@ namespace GAGCore
 	void DrawableSurface::uploadToTexture(void)
 	{
 		#ifdef HAVE_OPENGL
-		if (usingAtlas)
+		if (sprite)
 		{
 			return;
 		}
