@@ -134,7 +134,7 @@ namespace GAGCore
 		int tileHeight = images[0]->getH();
 		int sheetWidth = tileWidth * (static_cast<int>(sqrt(numImages)) + 1);
 		int sheetHeight = tileHeight * (static_cast<int>(sqrt(numImages)) + 1);
-		atlas = make_unique<DrawableSurface>(sheetWidth, sheetHeight);
+		std::unique_ptr<DrawableSurface> atlas = make_unique<DrawableSurface>(sheetWidth, sheetHeight);
 		int x = 0, y = 0;
 		for (auto image: images)
 		{
@@ -158,6 +158,7 @@ namespace GAGCore
 			image->sprite = this;
 			image->setRes(sheetWidth, sheetHeight);
 		}
+		this->atlas = std::move(atlas);
 		glGenBuffers(1, &vbo);
 		glGenBuffers(1, &texCoordBuffer);
 #endif
