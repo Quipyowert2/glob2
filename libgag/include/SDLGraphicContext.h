@@ -175,6 +175,7 @@ namespace GAGCore
 		//! width and height of this tile if using atlas
 		int w = 0;
 		int h = 0;
+		int atlasNum = -1; // which atlas to use in case of limited texture size
 		//! texture divisor
 		float texMultX, texMultY;
 		
@@ -436,11 +437,11 @@ namespace GAGCore
 
 		// Sprite sheet stuff to efficiently draw terrain/water/units.
 #ifdef HAVE_OPENGL
-		std::vector <float> vertices;
-		std::vector <float> texCoords;
-		unsigned int vbo;
-		unsigned int texCoordBuffer;
-		std::unique_ptr<const DrawableSurface> atlas = nullptr;
+		std::vector<std::vector <float>> vertices;
+		std::vector<std::vector <float>> texCoords;
+		std::vector<unsigned int> vbo;
+		std::vector<unsigned int> texCoordBuffer;
+		std::vector<std::unique_ptr<const DrawableSurface>> atlas;
 #endif
 		Color actColor;
 	

@@ -1695,10 +1695,13 @@ namespace GAGCore
 
 			// draw
 			glState.setTexture(surface->texture);
+			Sprite* sprite = surface->sprite;
+			int sheetNo = surface->atlasNum;
 			if (surface->sprite && alpha == Color::ALPHA_OPAQUE)
 			{
-				surface->sprite->vertices.insert(surface->sprite->vertices.end(), { x, y, x + w, y, x + w, y + h, x, y + h });
-				surface->sprite->texCoords.insert(surface->sprite->texCoords.end(), {
+				assert(sheetNo != -1);
+				sprite->vertices[sheetNo].insert(sprite->vertices[sheetNo].end(), {x, y, x + w, y, x + w, y + h, x, y + h});
+				sprite->texCoords[sheetNo].insert(sprite->texCoords[sheetNo].end(), {
 					static_cast<float>(sx) * surface->texMultX, static_cast<float>(sy) * surface->texMultY,
 					static_cast<float>(sx + sw) * surface->texMultX, static_cast<float>(sy) * surface->texMultY,
 					static_cast<float>(sx + sw) * surface->texMultX, static_cast<float>(sy + sh) * surface->texMultY,
@@ -1730,7 +1733,7 @@ namespace GAGCore
 #ifdef HAVE_OPENGL
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
-			if (!sprite->atlas)
+			if (!sprite->atlas.size())
 			{
 				// No sprite sheet, so we have nothing to draw.
 				assert(!sprite->vertices.size());
@@ -1749,17 +1752,20 @@ namespace GAGCore
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			glColor4ub(255, 255, 255, alpha);
-			glState.setTexture(sprite->atlas->texture);
-			glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo);
-			glBufferData(GL_ARRAY_BUFFER, sprite->vertices.size() * sizeof(float), &sprite->vertices[0], GL_STREAM_DRAW);
-			glVertexPointer(2, GL_FLOAT, 0, 0);
-			glBindBuffer(GL_ARRAY_BUFFER, sprite->texCoordBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sprite->texCoords.size() * sizeof(float), &sprite->texCoords[0], GL_STREAM_DRAW);
-			glTexCoordPointer(2, GL_FLOAT, 0, 0);
-			glDrawArrays(GL_QUADS, 0, sprite->vertices.size() / 2);
+			for (int i = 0; i < sprite->atlas.size();i++)
+			{
+				glState.setTexture(sprite->atlas[i]->texture);
+				glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo[i]);
+				glBufferData(GL_ARRAY_BUFFER, sprite->vertices[i].size() * sizeof(float), sprite->vertices[i].data(), GL_STREAM_DRAW);
+				glVertexPointer(2, GL_FLOAT, 0, 0);
+				glBindBuffer(GL_ARRAY_BUFFER, sprite->texCoordBuffer[i]);
+				glBufferData(GL_ARRAY_BUFFER, sprite->texCoords[i].size() * sizeof(float), sprite->texCoords[i].data(), GL_STREAM_DRAW);
+				glTexCoordPointer(2, GL_FLOAT, 0, 0);
+				glDrawArrays(GL_QUADS, 0, sprite->vertices[i].size() / 2);
 
-			sprite->vertices.clear();
-			sprite->texCoords.clear();
+				sprite->vertices[i].clear();
+				sprite->texCoords[i].clear();
+			}
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glDisableClientState(GL_VERTEX_ARRAY);
