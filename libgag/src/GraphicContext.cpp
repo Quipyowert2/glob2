@@ -1733,18 +1733,6 @@ namespace GAGCore
 #ifdef HAVE_OPENGL
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
-			if (!sprite->atlas.size())
-			{
-				// No sprite sheet, so we have nothing to draw.
-				assert(!sprite->vertices.size());
-				assert(!sprite->texCoords.size());
-				return;
-			}
-			if (sprite->vertices.empty() || sprite->texCoords.empty())
-			{
-				// No data.
-				return;
-			}
 			// state change
 			glState.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glState.doBlend(true);
@@ -1754,6 +1742,18 @@ namespace GAGCore
 			glColor4ub(255, 255, 255, alpha);
 			for (int i = 0; i < sprite->atlas.size();i++)
 			{
+				if (!sprite->atlas[i])
+				{
+					// No sprite sheet, so we have nothing to draw.
+					assert(sprite->vertices[i].empty());
+					assert(sprite->texCoords[i].empty());
+					continue;
+				}
+				if (sprite->vertices[i].empty() || sprite->texCoords[i].empty())
+				{
+					// No data.
+					continue;
+				}
 				glState.setTexture(sprite->atlas[i]->texture);
 				glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo[i]);
 				glBufferData(GL_ARRAY_BUFFER, sprite->vertices[i].size() * sizeof(float), sprite->vertices[i].data(), GL_STREAM_DRAW);
