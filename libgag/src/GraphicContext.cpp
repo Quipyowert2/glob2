@@ -1723,43 +1723,7 @@ namespace GAGCore
 #ifdef HAVE_OPENGL
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
-			// state change
-			glState.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glState.doBlend(true);
-			glState.doTexture(true);
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glColor4ub(255, 255, 255, alpha);
-			for (int i = 0; i < sprite->atlas.size();i++)
-			{
-				if (!sprite->atlas[i])
-				{
-					// No sprite sheet, so we have nothing to draw.
-					assert(sprite->vertices[i].empty());
-					assert(sprite->texCoords[i].empty());
-					continue;
-				}
-				if (sprite->vertices[i].empty() || sprite->texCoords[i].empty())
-				{
-					// No data.
-					continue;
-				}
-				glState.setTexture(sprite->atlas[i]->texture);
-				glBindBuffer(GL_ARRAY_BUFFER, sprite->vbo[i]);
-				glBufferData(GL_ARRAY_BUFFER, sprite->vertices[i].size() * sizeof(float), sprite->vertices[i].data(), GL_STREAM_DRAW);
-				glVertexPointer(2, GL_FLOAT, 0, 0);
-				glBindBuffer(GL_ARRAY_BUFFER, sprite->texCoordBuffer[i]);
-				glBufferData(GL_ARRAY_BUFFER, sprite->texCoords[i].size() * sizeof(float), sprite->texCoords[i].data(), GL_STREAM_DRAW);
-				glTexCoordPointer(2, GL_FLOAT, 0, 0);
-				glDrawArrays(GL_QUADS, 0, sprite->vertices[i].size() / 2);
-
-				sprite->vertices[i].clear();
-				sprite->texCoords[i].clear();
-			}
-
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glDisableClientState(GL_VERTEX_ARRAY);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			sprite->finishDrawing(glState, alpha);
 		}
 #endif
 	}
