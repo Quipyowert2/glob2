@@ -442,6 +442,8 @@ namespace GAGCore
 		std::vector<unsigned int> vbo;
 		std::vector<unsigned int> texCoordBuffer;
 		std::vector<std::unique_ptr<const DrawableSurface>> atlas;
+		void addVertices(int sheetNo, const std::initializer_list<float> &verts);
+		void addTextureCoordinates(int sheetNo, const std::initializer_list<float> &coords);
 #endif
 		Color actColor;
 	
