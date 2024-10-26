@@ -115,134 +115,124 @@ namespace GAGCore
 
 	#ifdef HAVE_OPENGL
 	// Cache for GL state, call gl only if necessary. GL optimisations
-	static struct GLState
+
+	const bool GLState::verbose = false;
+	GLState glState;
+	GLState::GLState(void)
 	{
-		static const bool verbose = false;
-		bool _doBlend;
-		bool _doTexture;
-		bool _doScissor;
-		GLint _texture;
-		GLenum _sfactor, _dfactor;
-		bool isTextureSRectangle;
-		bool useATIWorkaround;
-		unsigned alocatedTextureCount;
+		resetCache();
+		isTextureSRectangle = false;
+		useATIWorkaround = false;
+		alocatedTextureCount = 0;
+	}
 
-		GLState(void)
+	void GLState::resetCache(void)
+	{
+		_doBlend = false;
+		_doTexture = false;
+		_doScissor = false;
+		_texture = -1;
+		_sfactor = 0xffffffff;
+		_dfactor = 0xffffffff;
+	}
+
+	void GLState::checkExtensions(void)
+	{
+		const char *glExtensions = (const char *)glGetString(GL_EXTENSIONS);
+		isTextureSRectangle = (strstr(glExtensions, "GL_NV_texture_rectangle") != NULL);
+		isTextureSRectangle = isTextureSRectangle || (strstr(glExtensions, "GL_EXT_texture_rectangle") != NULL);
+		isTextureSRectangle = isTextureSRectangle || (strstr(glExtensions, "GL_ARB_texture_rectangle") != NULL);
+
+		const char *glVendor= (const char *)glGetString(GL_VENDOR);
+		if(strstr(glVendor,"ATI"))
+			useATIWorkaround = true; // ugly temporary bug fix for bug 13823. We think it is an ATI driver bug
+
+		if (verbose)
 		{
-			resetCache();
-			isTextureSRectangle = false;
-			useATIWorkaround = false;
-			alocatedTextureCount = 0;
-		}
-
-		void resetCache(void)
-		{
-			_doBlend = false;
-			_doTexture = false;
-			_doScissor = false;
-			_texture = -1;
-			_sfactor = 0xffffffff;
-			_dfactor = 0xffffffff;
-		}
-
-		void checkExtensions(void)
-		{
-			const char *glExtensions = (const char *)glGetString(GL_EXTENSIONS);
-			isTextureSRectangle = (strstr(glExtensions, "GL_NV_texture_rectangle") != NULL);
-			isTextureSRectangle = isTextureSRectangle || (strstr(glExtensions, "GL_EXT_texture_rectangle") != NULL);
-			isTextureSRectangle = isTextureSRectangle || (strstr(glExtensions, "GL_ARB_texture_rectangle") != NULL);
-
-			const char *glVendor= (const char *)glGetString(GL_VENDOR);
-			if(strstr(glVendor,"ATI"))
-				useATIWorkaround = true; // ugly temporary bug fix for bug 13823. We think it is an ATI driver bug
-
-			if (verbose)
-			{
-				if (isTextureSRectangle)
-				{
-					std::cout << "Toolkit : GL_NV_texture_rectangle or GL_EXT_texture_rectangle extension present, optimal texture size will be used" << std::endl;
-				} else {
-					std::cout << "Toolkit : GL_NV_texture_rectangle or GL_EXT_texture_rectangle extension not present, power of two texture will be used" << std::endl;
-				}
-			}
-		}
-
-		bool doBlend(bool on)
-		{
-			if (_doBlend == on)
-				return on;
-			if (on)
-				glEnable(GL_BLEND);
-			else
-				glDisable(GL_BLEND);
-			_doBlend = on;
-			return !on;
-		}
-
-		bool doTexture(bool on)
-		{
-			if (_doTexture == on)
-				return on;
-			GLenum cap;
-			if (isTextureSRectangle)
-				cap = GL_TEXTURE_RECTANGLE_NV;
-			else
-				cap = GL_TEXTURE_2D;
-
-			if (on)
-				glEnable(cap);
-			else
-				glDisable(cap);
-			_doTexture = on;
-			return !on;
-		}
-
-		void setTexture(int tex)
-		{
-			if (_texture == tex)
-				return;
-
 			if (isTextureSRectangle)
 			{
-				if(useATIWorkaround)
-					glBindTexture(GL_TEXTURE_RECTANGLE_NV, 0);
-				glBindTexture(GL_TEXTURE_RECTANGLE_NV, tex);
+				std::cout << "Toolkit : GL_NV_texture_rectangle or GL_EXT_texture_rectangle extension present, optimal texture size will be used" << std::endl;
+			} else {
+				std::cout << "Toolkit : GL_NV_texture_rectangle or GL_EXT_texture_rectangle extension not present, power of two texture will be used" << std::endl;
 			}
-			else
-				glBindTexture(GL_TEXTURE_2D, tex);
-			_texture = tex;
 		}
+	}
 
-		bool doScissor(bool on)
+	bool GLState::doBlend(bool on)
+	{
+		if (_doBlend == on)
+			return on;
+		if (on)
+			glEnable(GL_BLEND);
+		else
+			glDisable(GL_BLEND);
+		_doBlend = on;
+		return !on;
+	}
+
+	bool GLState::doTexture(bool on)
+	{
+		if (_doTexture == on)
+			return on;
+		GLenum cap;
+		if (isTextureSRectangle)
+			cap = GL_TEXTURE_RECTANGLE_NV;
+		else
+			cap = GL_TEXTURE_2D;
+
+		if (on)
+			glEnable(cap);
+		else
+			glDisable(cap);
+		_doTexture = on;
+		return !on;
+	}
+
+	void GLState::setTexture(int tex)
+	{
+		if (_texture == tex)
+			return;
+
+		if (isTextureSRectangle)
 		{
-			// The glIsEnabled is function is quite expensive. That's why we have a _doScissor variable.
-			// I'm quite sure that this assert should never fail, so I've outcommented it, partially
-			// because we don't do #define NDEBUG in most of our releases (so far).
-			
-			//assert(_doScissor == glIsEnabled(GL_SCISSOR_TEST));
-			
-			if (_doScissor == on)
-				return on;
-
-			if (on)
-				glEnable(GL_SCISSOR_TEST);
-			else
-				glDisable(GL_SCISSOR_TEST);
-			_doScissor = on;
-			return !on;
+			if(useATIWorkaround)
+				glBindTexture(GL_TEXTURE_RECTANGLE_NV, 0);
+			glBindTexture(GL_TEXTURE_RECTANGLE_NV, tex);
 		}
+		else
+			glBindTexture(GL_TEXTURE_2D, tex);
+		_texture = tex;
+	}
 
-		void blendFunc(GLenum sfactor, GLenum dfactor)
-		{
-			if ((sfactor == _sfactor) && (dfactor == _dfactor))
-				return;
+	bool GLState::doScissor(bool on)
+	{
+		// The glIsEnabled is function is quite expensive. That's why we have a _doScissor variable.
+		// I'm quite sure that this assert should never fail, so I've outcommented it, partially
+		// because we don't do #define NDEBUG in most of our releases (so far).
+			
+		//assert(_doScissor == glIsEnabled(GL_SCISSOR_TEST));
+			
+		if (_doScissor == on)
+			return on;
 
-			glBlendFunc(sfactor, dfactor);
+		if (on)
+			glEnable(GL_SCISSOR_TEST);
+		else
+			glDisable(GL_SCISSOR_TEST);
+		_doScissor = on;
+		return !on;
+	}
 
-			_sfactor = sfactor;
-			_dfactor = dfactor;
-		}
-	} glState;
+	void GLState::blendFunc(GLenum sfactor, GLenum dfactor)
+	{
+		if ((sfactor == _sfactor) && (dfactor == _dfactor))
+			return;
+
+		glBlendFunc(sfactor, dfactor);
+
+		_sfactor = sfactor;
+		_dfactor = dfactor;
+	}
 	#endif
 
 	SDL_Surface *DrawableSurface::convertForUpload(SDL_Surface *source)

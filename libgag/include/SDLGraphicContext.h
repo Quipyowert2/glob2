@@ -414,6 +414,29 @@ namespace GAGCore
 		//! Return the option flags
 		Uint32 getOptionFlags(void) { return optionFlags; }
 	};
+
+	typedef int GLint;
+	typedef unsigned int GLenum;
+	struct GLState
+	{
+		static const bool verbose;
+		bool _doBlend;
+		bool _doTexture;
+		bool _doScissor;
+		GLint _texture;
+		GLenum _sfactor, _dfactor;
+		bool isTextureSRectangle;
+		bool useATIWorkaround;
+		unsigned alocatedTextureCount;
+		GLState(void);
+		void resetCache(void);
+		void checkExtensions(void);
+		bool doBlend(bool on);
+		bool doTexture(bool on);
+		void setTexture(int tex);
+		bool doScissor(bool on);
+		void blendFunc(GLenum sfactor, GLenum dfactor);
+	};
 	
 	//! A sprite is a collection of images (frames) that can be displayed one after another to make an animation
 	class Sprite
