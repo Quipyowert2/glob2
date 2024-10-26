@@ -111,6 +111,18 @@ namespace GAGCore
 		return getFrameCount() > 0;
 	}
 
+	void Sprite::addVertices(int sheetNo, const std::initializer_list<float> &verts)
+	{
+		assert(sheetNo != -1);
+		vertices[sheetNo].insert(vertices[sheetNo].end(), verts);
+	}
+
+	void Sprite::addTextureCoordinates(int sheetNo, const std::initializer_list<float> &coords)
+	{
+		assert(sheetNo != -1);
+		texCoords[sheetNo].insert(texCoords[sheetNo].end(), coords);
+	}
+
 	// Create texture atlas for images array
 	// Using a sprite sheet lets us efficiently drawn terrain and water with a few calls
 	// to glDrawArrays, rather than 272 individual calls to glBegin...glEnd.

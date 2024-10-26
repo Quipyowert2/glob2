@@ -1700,8 +1700,8 @@ namespace GAGCore
 			if (surface->sprite && alpha == Color::ALPHA_OPAQUE)
 			{
 				assert(sheetNo != -1);
-				sprite->vertices[sheetNo].insert(sprite->vertices[sheetNo].end(), {x, y, x + w, y, x + w, y + h, x, y + h});
-				sprite->texCoords[sheetNo].insert(sprite->texCoords[sheetNo].end(), {
+				sprite->addVertices(sheetNo, { x, y, x + w, y, x + w, y + h, x, y + h });
+				sprite->addTextureCoordinates(sheetNo, {
 					static_cast<float>(sx) * surface->texMultX, static_cast<float>(sy) * surface->texMultY,
 					static_cast<float>(sx + sw) * surface->texMultX, static_cast<float>(sy) * surface->texMultY,
 					static_cast<float>(sx + sw) * surface->texMultX, static_cast<float>(sy + sh) * surface->texMultY,
