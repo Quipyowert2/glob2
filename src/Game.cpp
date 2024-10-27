@@ -1926,6 +1926,7 @@ void Game::drawUnit(int x, int y, Uint16 gid, int viewportX, int viewportY, int 
 
 		if ((unit->performance[HARVEST]) && (unit->carriedRessource>=0))
 			globalContainer->gfx->drawSprite(px+24, py, globalContainer->ressourceMini, unit->carriedRessource);
+		globalContainer->gfx->finishDrawingSprite(globalContainer->ressourceMini, 255);
 	}
 
 	if (drawOptions & DRAW_ACCESSIBILITY)

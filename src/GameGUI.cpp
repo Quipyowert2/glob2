@@ -3144,6 +3144,7 @@ void GameGUI::drawBuildingInfos(void)
 	miniSprite->setBaseColor(selBuild->owner->color);
 	globalContainer->gfx->drawSprite(globalContainer->gfx->getW()-RIGHT_MENU_WIDTH+ddx+dx, ypos+4+dy, miniSprite, imgid);
 	globalContainer->gfx->drawSprite(globalContainer->gfx->getW()-RIGHT_MENU_WIDTH+ddx, ypos+4, globalContainer->gamegui, 18);
+	globalContainer->gfx->finishDrawingSprite(miniSprite, 255);
 
 	// draw HP
 	if (buildingType->hpMax)
@@ -3374,6 +3375,8 @@ void GameGUI::drawBuildingInfos(void)
 			ypos += YOFFSET_TEXT_PARA;
 		}
 	}
+
+	globalContainer->gfx->finishDrawingSprite(globalContainer->gamegui, 255);
 
 	// other infos
 	if (buildingType->armor)
