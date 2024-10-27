@@ -134,6 +134,7 @@ namespace GAGCore
 		{
 			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 		}
+		assert(maxTextureSize);
 		size_t numImages = images.size();
 		int tileWidth = 0, tileHeight = 0;
 		// Check all tiles have the same size
@@ -149,49 +150,49 @@ namespace GAGCore
 			if (image->getW() != tileWidth || image->getH() != tileHeight)
 				return;
 		}
-		int sheetWidth = tileWidth * (static_cast<int>(sqrt(numImages)) + 1);
-		int sheetHeight = tileHeight * (static_cast<int>(sqrt(numImages)) + 1);
-		bool lastFit = false;
 		int texturesNeeded = 0;
 		typedef struct {
 			int width;
 			int height;
 			int numImages;
 		} TextureDim;
-		std::vector<TextureDim> textureDimensions;
+		std::vector<TextureDim> possibleDimensions;
 		// Given maximum texture size, determine how many sprite sheets are needed.
 		for (int widthInTiles = 1; widthInTiles < maxTextureSize / tileWidth; widthInTiles++)
 		{
 			int filledRows = numImages / widthInTiles;
 			int leftOver = numImages % widthInTiles;
 			int totalRows = filledRows + (bool)(leftOver > 0);
-			if (totalRows * tileHeight > maxTextureSize && lastFit)
-			{
-				// Too tall.
-				int lastWidth = widthInTiles - 1;
-				int lastRows = numImages / lastWidth;
-				int lastOver = numImages % lastWidth;
-				texturesNeeded++;
-				TextureDim td = { lastWidth, lastRows + (bool)(lastOver > 0), widthInTiles * lastRows + lastOver };
-				textureDimensions.push_back(td);
-				lastFit = false;
-			}
 			if (totalRows * tileHeight <= maxTextureSize)
 			{
 				// It fits.
-				lastFit = true;
+				TextureDim td = { widthInTiles, filledRows + (leftOver > 0), widthInTiles * filledRows + leftOver };
+				possibleDimensions.push_back(td);
 			}
 		}
+		// Pick the squarish one.
+		auto bestSize = std::min_element(possibleDimensions.begin(), possibleDimensions.end(),
+			[](const TextureDim& lhs, const TextureDim& rhs) -> bool {
+				return abs(lhs.width - lhs.height) < abs(rhs.width - rhs.height);
+		});
+		assert(!possibleDimensions.empty());
+		texturesNeeded = numImages / bestSize->numImages + numImages % bestSize->numImages;
+		assert(texturesNeeded);
 		// Create n texture atlases
 		int currentImage = 0;
 		int sheetNo = 0;
-		for (const TextureDim& td : textureDimensions)
+		atlas.reserve(texturesNeeded);
+		vbo.reserve(texturesNeeded);
+		texCoordBuffer.reserve(texturesNeeded);
+		vertices.reserve(texturesNeeded);
+		texCoords.reserve(texturesNeeded);
+		while (sheetNo < texturesNeeded)
 		{
-			sheetWidth = td.width;
-			sheetHeight = td.height;
+			int sheetWidth = bestSize->width * tileWidth;
+			int sheetHeight = bestSize->height * tileWidth;
 			std::unique_ptr<DrawableSurface> atlas = make_unique<DrawableSurface>(sheetWidth, sheetHeight);
 			int x = 0, y = 0;
-			for (int i = currentImage; i < currentImage + td.numImages; i++)
+			for (int i = currentImage; i < currentImage + bestSize->numImages; i++)
 			{
 				DrawableSurface* image = images[i];
 				atlas->drawSurface(x, y, image);
@@ -209,7 +210,7 @@ namespace GAGCore
 				}
 			}
 			atlas->uploadToTexture();
-			for (int i = currentImage; i < currentImage + td.numImages; i++)
+			for (int i = currentImage; i < currentImage + bestSize->numImages; i++)
 			{
 				DrawableSurface* image = images[i];
 				image->texture = atlas->texture;
@@ -217,8 +218,11 @@ namespace GAGCore
 				image->setRes(sheetWidth, sheetHeight);
 			}
 			this->atlas.push_back(std::move(atlas));
-			currentImage += td.numImages;
+			currentImage += bestSize->numImages;
 			sheetNo++;
+			std::vector<float> v, v2;
+			vertices.push_back(v);
+			texCoords.push_back(v2);
 		}
 		// Generate Opengl stuff
 		for (int i = 0; i < texturesNeeded; i++)
