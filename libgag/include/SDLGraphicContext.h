@@ -455,6 +455,10 @@ namespace GAGCore
 		friend class GraphicContext;
 	
 		std::string fileName;
+//#define DEBUG_SPRITE_NOT_DRAWN
+#ifdef DEBUG_SPRITE_NOT_DRAWN
+		static std::vector <Sprite*> sprites;
+#endif
 		std::vector <DrawableSurface *> images;
 		std::vector <RotatedImage *> rotated;
 
@@ -469,6 +473,7 @@ namespace GAGCore
 		void addVertices(int sheetNo, const std::initializer_list<float>& verts);
 		void addTextureCoordinates(int sheetNo, const std::initializer_list<float>& coords);
 		void finishDrawing(GLState& state, Uint8 alpha);
+		static void checkAllSpritesDrawn();
 
 		Color actColor;
 	

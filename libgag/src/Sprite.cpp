@@ -113,14 +113,34 @@ namespace GAGCore
 
 	void Sprite::addVertices(int sheetNo, const std::initializer_list<float> &verts)
 	{
+#ifdef HAVE_OPENGL
 		assert(sheetNo != -1);
 		vertices[sheetNo].insert(vertices[sheetNo].end(), verts);
+#endif
 	}
 
 	void Sprite::addTextureCoordinates(int sheetNo, const std::initializer_list<float> &coords)
 	{
+#ifdef HAVE_OPENGL
 		assert(sheetNo != -1);
 		texCoords[sheetNo].insert(texCoords[sheetNo].end(), coords);
+#endif
+	}
+
+#ifdef DEBUG_SPRITE_NOT_DRAWN
+	std::vector<Sprite*> Sprite::sprites;
+#endif
+
+	void Sprite::checkAllSpritesDrawn()
+	{
+#ifdef DEBUG_SPRITE_NOT_DRAWN
+		for (const Sprite* sprite : sprites)
+			for (int i = 0;i < sprite->atlas.size();i++)
+				if (sprite->vertices[i].size() || sprite->texCoords[i].size())
+				{
+					std::cout << "Warning: Sprite " << sprite->fileName << " has not been drawn" << std::endl;
+				}
+#endif
 	}
 
 	// Create texture atlas for images array
@@ -130,6 +150,9 @@ namespace GAGCore
 	{
 #ifdef HAVE_OPENGL
 		static int maxTextureSize = 0;
+#ifdef DEBUG_SPRITE_NOT_DRAWN
+		sprites.push_back(this);
+#endif
 		if (!maxTextureSize)
 		{
 			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
