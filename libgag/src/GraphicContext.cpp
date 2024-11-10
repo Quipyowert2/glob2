@@ -235,6 +235,11 @@ namespace GAGCore
 	}
 	#endif
 
+	GLState& GraphicContext::getGLState()
+	{
+		return glState;
+	}
+
 	SDL_Surface *DrawableSurface::convertForUpload(SDL_Surface *source)
 	{
 		SDL_Surface *dest;
@@ -1723,7 +1728,7 @@ namespace GAGCore
 #ifdef HAVE_OPENGL
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
-			sprite->finishDrawing(glState, alpha);
+			sprite->finishDrawing(alpha);
 		}
 #endif
 	}
