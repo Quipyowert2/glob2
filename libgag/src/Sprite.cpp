@@ -257,7 +257,7 @@ namespace GAGCore
 #endif
 	}
 
-	void Sprite::finishDrawing(GLState &glState, Uint8 alpha)
+	void Sprite::finishDrawing(Uint8 alpha)
 	{
 #ifdef HAVE_OPENGL
 		// state change
