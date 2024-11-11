@@ -305,7 +305,7 @@ namespace GAGCore
 	void DrawableSurface::allocateTexture(void)
 	{
 		#ifdef HAVE_OPENGL
-		if (sprite)
+		if (textureInfo)
 			return;
 		if (_gc->optionFlags & GraphicContext::USEGPU)
 		{
@@ -349,7 +349,7 @@ namespace GAGCore
 	void DrawableSurface::uploadToTexture(void)
 	{
 		#ifdef HAVE_OPENGL
-		if (sprite)
+		if (textureInfo)
 		{
 			return;
 		}
@@ -1057,22 +1057,22 @@ namespace GAGCore
 
 	void DrawableSurface::drawSurface(int x, int y, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void DrawableSurface::drawSurface(float x, float y, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void DrawableSurface::drawSurface(int x, int y, int w, int h, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, w, h, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, w, h, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void DrawableSurface::drawSurface(float x, float y, float w, float h, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, w, h, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, w, h, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void DrawableSurface::drawSurface(int x, int y, DrawableSurface *surface, int sx, int sy, int sw, int sh, Uint8 alpha)
@@ -1625,22 +1625,22 @@ namespace GAGCore
 
 	void GraphicContext::drawSurface(int x, int y, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void GraphicContext::drawSurface(float x, float y, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void GraphicContext::drawSurface(int x, int y, int w, int h, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, w, h, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, w, h, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void GraphicContext::drawSurface(float x, float y, float w, float h, DrawableSurface *surface, Uint8 alpha)
 	{
-		drawSurface(x, y, w, h, surface, surface->texX, surface->texY, surface->getW(), surface->getH(), alpha);
+		drawSurface(x, y, w, h, surface, surface->getTexX(), surface->getTexY(), surface->getW(), surface->getH(), alpha);
 	}
 
 	void GraphicContext::drawSurface(int x, int y, DrawableSurface *surface, int sx, int sy, int sw, int sh, Uint8 alpha)
@@ -1690,10 +1690,10 @@ namespace GAGCore
 
 			// draw
 			glState.setTexture(surface->texture);
-			Sprite* sprite = surface->sprite;
-			int sheetNo = surface->atlasNum;
-			if (surface->sprite && alpha == Color::ALPHA_OPAQUE)
+			if (surface->textureInfo && surface->textureInfo->sprite && alpha == Color::ALPHA_OPAQUE)
 			{
+				Sprite* sprite = surface->textureInfo->sprite;
+				int sheetNo = surface->textureInfo->atlasNum;
 				assert(sheetNo != -1);
 				sprite->addVertices(sheetNo, { x, y, x + w, y, x + w, y + h, x, y + h });
 				sprite->addTextureCoordinates(sheetNo, {

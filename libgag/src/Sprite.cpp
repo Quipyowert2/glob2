@@ -219,13 +219,15 @@ namespace GAGCore
 			{
 				DrawableSurface* image = images[i];
 				atlas->drawSurface(x, y, image);
-				image->texX = x;
-				image->texY = y;
+				TextureInfo info;
+				image->textureInfo = info;
+				image->textureInfo->texX = x;
+				image->textureInfo->texY = y;
 				image->texMultX = 1.f;
 				image->texMultY = 1.f;
-				image->w = tileWidth;
-				image->h = tileHeight;
-				image->atlasNum = sheetNo;
+				image->textureInfo->w = tileWidth;
+				image->textureInfo->h = tileHeight;
+				image->textureInfo->atlasNum = sheetNo;
 				x += tileWidth;
 				if (tileWidth + x < sheetWidth) {
 					x = 0;
@@ -237,7 +239,7 @@ namespace GAGCore
 			{
 				DrawableSurface* image = images[i];
 				image->texture = atlas->texture;
-				image->sprite = this;
+				image->textureInfo->sprite = this;
 				image->setRes(sheetWidth, sheetHeight);
 			}
 			this->atlas.push_back(std::move(atlas));
