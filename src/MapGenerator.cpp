@@ -812,8 +812,7 @@ int MapGenerator::splitUpPoints(Game& game, std::vector<int>& grid, int areaN, s
 				return 0;
 		}
 	}
-	boost::random_number_generator<boost::mt19937> adapter(randomGenerator);
-	std::random_shuffle(points.begin(), points.end(), adapter);
+	std::shuffle(points.begin(), points.end(), randomGenerator);
 	return int(std::sqrt(double(minDist)));
 }
 
@@ -1331,8 +1330,7 @@ bool MapGenerator::joinLoop(Game& game, std::vector<Node> nodes, std::vector<Nod
 	Node old1 = nodes[whichOne];
 	std::vector<Node> newNodes = nodes;
 	newNodes.erase(newNodes.begin() + whichOne);
-	boost::random_number_generator<boost::mt19937> adapter(randomGenerator);
-	std::random_shuffle(newNodes.begin(), newNodes.end(), adapter);
+	std::shuffle(newNodes.begin(), newNodes.end(), randomGenerator);
 	
 	bool found=false;
 	for(unsigned int i=0; i<newNodes.size(); ++i)
