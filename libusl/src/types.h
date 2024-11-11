@@ -163,8 +163,8 @@ struct Scope: Thunk
 	virtual void propagateMarkForGC()
 	{
 		using std::for_each;
-		using std::mem_fun;
-		for_each(locals.begin(), locals.end(), mem_fun(&Value::markForGC));
+		using std::mem_fn;
+		for_each(locals.begin(), locals.end(), mem_fn(&Value::markForGC));
 	}
 	
 	ScopePrototype* scopePrototype() const
