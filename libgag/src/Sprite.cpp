@@ -192,11 +192,12 @@ namespace GAGCore
 			}
 		}
 		// Pick the squarish one.
-		std::sort(possibleDimensions.begin(), possibleDimensions.end(), [](const TextureDim& lhs, const TextureDim& rhs) {
-			return abs(lhs.width - lhs.height) < abs(rhs.width - rhs.height);
+		auto bestSize = std::min_element(possibleDimensions.begin(), possibleDimensions.end(),
+			[](const TextureDim& lhs, const TextureDim& rhs) -> bool {
+				return abs(lhs.width - lhs.height) < abs(rhs.width - rhs.height);
 		});
-		assert(possibleDimensions.size() > 0);
-		texturesNeeded = numImages / possibleDimensions[0].numImages + numImages % possibleDimensions[0].numImages;
+		assert(!possibleDimensions.empty());
+		texturesNeeded = numImages / bestSize->numImages + numImages % bestSize->numImages;
 		// Create n texture atlases
 		int currentImage = 0;
 		int sheetNo = 0;
@@ -207,12 +208,11 @@ namespace GAGCore
 		texCoords.reserve(texturesNeeded);
 		while (sheetNo < texturesNeeded)
 		{
-			TextureDim td = possibleDimensions[0];
-			int sheetWidth = td.width * tileWidth;
-			int sheetHeight = td.height * tileWidth;
+			int sheetWidth = bestSize->width * tileWidth;
+			int sheetHeight = bestSize->height * tileWidth;
 			std::unique_ptr<DrawableSurface> atlas = make_unique<DrawableSurface>(sheetWidth, sheetHeight);
 			int x = 0, y = 0;
-			for (int i = currentImage; i < currentImage + td.numImages; i++)
+			for (int i = currentImage; i < currentImage + bestSize->numImages; i++)
 			{
 				DrawableSurface* image = images[i];
 				atlas->drawSurface(x, y, image);
@@ -232,7 +232,7 @@ namespace GAGCore
 				}
 			}
 			atlas->uploadToTexture();
-			for (int i = currentImage; i < currentImage + td.numImages; i++)
+			for (int i = currentImage; i < currentImage + bestSize->numImages; i++)
 			{
 				DrawableSurface* image = images[i];
 				image->texture = atlas->texture;
@@ -240,7 +240,7 @@ namespace GAGCore
 				image->setRes(sheetWidth, sheetHeight);
 			}
 			this->atlas.push_back(std::move(atlas));
-			currentImage += td.numImages;
+			currentImage += bestSize->numImages;
 			sheetNo++;
 			std::vector<float> v, v2;
 			vertices.push_back(v);
