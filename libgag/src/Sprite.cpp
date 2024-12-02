@@ -116,8 +116,8 @@ namespace GAGCore
 			if (image->getW() != tileWidth || image->getH() != tileHeight)
 				return;
 		}
-		int sheetWidth = tileWidth * (sqrt(numImages) + 1);
-		int sheetHeight = tileHeight * (sqrt(numImages) + 1);
+		int sheetWidth = tileWidth * (static_cast<int>(sqrt(numImages)) + 1);
+		int sheetHeight = tileHeight * (static_cast<int>(sqrt(numImages)) + 1);
 		atlas = new DrawableSurface(sheetWidth, sheetHeight);
 		int x = 0, y = 0;
 		for (auto image: images)
