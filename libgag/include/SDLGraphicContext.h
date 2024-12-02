@@ -317,29 +317,6 @@ namespace GAGCore
 		static void printFinishingText();
 	};
 
-	typedef int GLint;
-	typedef unsigned int GLenum;
-	struct GLState
-	{
-		static const bool verbose;
-		bool _doBlend;
-		bool _doTexture;
-		bool _doScissor;
-		GLint _texture;
-		GLenum _sfactor, _dfactor;
-		bool isTextureSRectangle;
-		bool useATIWorkaround;
-		unsigned alocatedTextureCount;
-		GLState(void);
-		void resetCache(void);
-		void checkExtensions(void);
-		bool doBlend(bool on);
-		bool doTexture(bool on);
-		void setTexture(int tex);
-		bool doScissor(bool on);
-		void blendFunc(GLenum sfactor, GLenum dfactor);
-	};
-
 	//! The description of a video mode
 	typedef std::vector<SDL_DisplayMode> VideoModes;
 	
@@ -473,7 +450,6 @@ namespace GAGCore
 #endif
 		std::vector <DrawableSurface *> images;
 		std::vector <RotatedImage *> rotated;
-		GLState &glState;
 
 		// Sprite sheet stuff to efficiently draw terrain/water/units.
 #ifdef HAVE_OPENGL
@@ -485,6 +461,7 @@ namespace GAGCore
 		void addVertices(int sheetNo, const std::initializer_list<float> &verts);
 		void addTextureCoordinates(int sheetNo, const std::initializer_list<float> &coords);
 #endif
+
 		Color actColor;
 	
 		friend class DrawableSurface;
@@ -499,7 +476,7 @@ namespace GAGCore
 	
 	public:
 		//! Constructor
-		Sprite(GLState &glState) : fileName("not loaded yet"), glState(glState) { }
+		Sprite() : fileName("not loaded yet") { }
 		//! Destructor
 		virtual ~Sprite();
 		

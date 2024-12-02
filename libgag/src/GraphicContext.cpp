@@ -245,11 +245,6 @@ namespace GAGCore
 	} glState;
 	#endif
 
-	GLState& GraphicContext::getGLState()
-	{
-		return glState;
-	}
-
 	SDL_Surface *DrawableSurface::convertForUpload(SDL_Surface *source)
 	{
 		SDL_Surface *dest;

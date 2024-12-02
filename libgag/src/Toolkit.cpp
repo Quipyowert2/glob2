@@ -91,7 +91,7 @@ namespace GAGCore
 		assert(name.size());
 		if (spriteMap.find(name) == spriteMap.end())
 		{
-			Sprite *sprite = new Sprite(gc->getGLState());
+			Sprite *sprite = new Sprite();
 			if (sprite->load(name))
 			{
 				spriteMap[std::string(name)] = sprite;
