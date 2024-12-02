@@ -209,39 +209,32 @@ namespace GAGCore
 		texCoordBuffer.reserve(texturesNeeded);
 		vertices.reserve(texturesNeeded);
 		texCoords.reserve(texturesNeeded);
+		// For each sprite sheet
 		while (sheetNo < texturesNeeded)
 		{
 			int sheetWidth = bestSize->width * tileWidth;
 			int sheetHeight = bestSize->height * tileWidth;
 			std::unique_ptr<DrawableSurface> atlas = make_unique<DrawableSurface>(sheetWidth, sheetHeight);
 			int x = 0, y = 0;
-			for (int i = currentImage; i < currentImage + bestSize->numImages; i++)
+			// For each tile in the current sprite sheet
+			for (int i = 0; i < bestSize->numImages; i++)
 			{
-				DrawableSurface* image = images[i];
+				DrawableSurface* image = images[i + currentImage];
 				atlas->drawSurface(x, y, image);
-				TextureInfo info;
-				image->textureInfo = info;
-				image->textureInfo->texX = x;
-				image->textureInfo->texY = y;
+				TextureInfo info = { this, x, y, tileWidth, tileHeight, sheetNo };
 				image->texMultX = 1.f;
 				image->texMultY = 1.f;
-				image->textureInfo->w = tileWidth;
-				image->textureInfo->h = tileHeight;
-				image->textureInfo->atlasNum = sheetNo;
+				image->textureInfo = info;
+				image->texture = atlas->texture;
+				image->setRes(sheetWidth, sheetHeight);
 				x += tileWidth;
 				if (tileWidth + x < sheetWidth) {
 					x = 0;
 					y += tileHeight;
 				}
 			}
+			// Finish drawing the sprite sheet.
 			atlas->uploadToTexture();
-			for (int i = currentImage; i < currentImage + bestSize->numImages; i++)
-			{
-				DrawableSurface* image = images[i];
-				image->texture = atlas->texture;
-				image->textureInfo->sprite = this;
-				image->setRes(sheetWidth, sheetHeight);
-			}
 			this->atlas.push_back(std::move(atlas));
 			currentImage += bestSize->numImages;
 			sheetNo++;
