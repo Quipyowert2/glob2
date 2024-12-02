@@ -448,8 +448,6 @@ namespace GAGCore
 		
 		//! Return the option flags
 		Uint32 getOptionFlags(void) { return optionFlags; }
-
-		GLState& getGLState();
 	};
 	
 	//! A sprite is a collection of images (frames) that can be displayed one after another to make an animation
