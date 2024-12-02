@@ -157,19 +157,22 @@ namespace GAGCore
 		{
 			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 		}
+		assert(maxTextureSize);
 		size_t numImages = images.size();
-		int tileWidth = 0, tileHeight = 0;
-		for (auto image : images)
+		auto firstNonNull = std::find_if(images.begin(), images.end(), [](DrawableSurface* ds) {return ds != nullptr; });
+		if (firstNonNull == images.end())
 		{
-			if (!image)
-				return;
-			if (!tileWidth || !tileHeight)
-			{
-				tileWidth = image->getW();
-				tileHeight = image->getH();
-			}
-			if (image->getW() != tileWidth || image->getH() != tileHeight)
-				return;
+			// All images are NULL, so there's no point in making a sprite sheet.
+			return;
+		}
+		int tileWidth = (*firstNonNull)->getW();
+		int tileHeight = (*firstNonNull)->getH();
+		bool allSameSize = std::all_of(images.begin(), images.end(), [tileWidth, tileHeight](DrawableSurface* ds) {
+			return !ds || (ds->getW() == tileWidth && ds->getH() == tileHeight);
+		});
+		if (!allSameSize)
+		{
+			return;
 		}
 		int texturesNeeded = 0;
 		typedef struct {
@@ -198,6 +201,7 @@ namespace GAGCore
 		});
 		assert(!possibleDimensions.empty());
 		texturesNeeded = numImages / bestSize->numImages + numImages % bestSize->numImages;
+		assert(texturesNeeded);
 		// Create n texture atlases
 		int currentImage = 0;
 		int sheetNo = 0;
